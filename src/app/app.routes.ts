@@ -69,6 +69,10 @@ export const routes: Routes = [
       {
         path: 'users',
         loadComponent: () => import('./components/users/users-list/users-list.component').then(m => m.UsersListComponent)
+      },
+      {
+        path: 'settings',
+        loadComponent: () => import('./components/settings/settings.component').then(m => m.SettingsComponent)
       }
     ]
   },
