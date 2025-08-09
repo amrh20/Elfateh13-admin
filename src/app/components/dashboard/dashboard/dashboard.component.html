@@ -69,6 +69,75 @@
       </div>
     </div>
 
+    <!-- Analytics Grid -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <!-- Top Selling Products -->
+      <div class="bg-white rounded-lg shadow-sm border border-gray-200">
+        <div class="p-6 border-b border-gray-200">
+          <h3 class="text-lg font-semibold text-gray-900">الأكثر مبيعاً</h3>
+          <p class="text-sm text-gray-600">أفضل 5 منتجات</p>
+        </div>
+        <div class="p-6">
+          <div class="space-y-4">
+            <div *ngFor="let product of topSellingProducts; let i = index" class="flex items-center space-x-4">
+              <div class="w-6 h-6 bg-blue-100 rounded-full flex items-center justify-center">
+                <span class="text-xs font-bold text-blue-600">{{ i + 1 }}</span>
+              </div>
+              <img [src]="product.images[0]" [alt]="product.name" class="w-10 h-10 rounded-lg object-cover">
+              <div class="flex-1">
+                <p class="text-sm font-medium text-gray-900">{{ product.nameAr }}</p>
+                <p class="text-xs text-gray-500">{{ product.price | currency:'EGP' }}</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Slow Moving Products -->
+      <div class="bg-white rounded-lg shadow-sm border border-gray-200">
+        <div class="p-6 border-b border-gray-200">
+          <h3 class="text-lg font-semibold text-gray-900">بطيئة الحركة</h3>
+          <p class="text-sm text-gray-600">لم تُبَع منذ 30+ يوم</p>
+        </div>
+        <div class="p-6">
+          <div class="space-y-4">
+            <div *ngFor="let product of slowMovingProducts" class="flex items-center space-x-4">
+              <img [src]="product.images[0]" [alt]="product.name" class="w-10 h-10 rounded-lg object-cover">
+              <div class="flex-1">
+                <p class="text-sm font-medium text-gray-900">{{ product.nameAr }}</p>
+                <p class="text-xs text-gray-500">المخزون: {{ product.stock }}</p>
+              </div>
+              <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                بطيء
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Products for Promotion -->
+      <div class="bg-white rounded-lg shadow-sm border border-gray-200">
+        <div class="p-6 border-b border-gray-200">
+          <h3 class="text-lg font-semibold text-gray-900">مناسبة للعروض</h3>
+          <p class="text-sm text-gray-600">مخزون عالي، مبيعات منخفضة</p>
+        </div>
+        <div class="p-6">
+          <div class="space-y-4">
+            <div *ngFor="let product of productsForPromotion" class="flex items-center space-x-4">
+              <img [src]="product.images[0]" [alt]="product.name" class="w-10 h-10 rounded-lg object-cover">
+              <div class="flex-1">
+                <p class="text-sm font-medium text-gray-900">{{ product.nameAr }}</p>
+                <p class="text-xs text-gray-500">المخزون: {{ product.stock }}</p>
+              </div>
+              <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-orange-100 text-orange-800">
+                عرض
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <!-- Content Grid -->
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
       <!-- Featured Products -->
@@ -83,7 +152,6 @@
               <img [src]="product.images[0]" [alt]="product.name" class="w-12 h-12 rounded-lg object-cover">
               <div class="flex-1">
                 <p class="text-sm font-medium text-gray-900">{{ product.nameAr }}</p>
-
               </div>
               <div class="text-right">
                 <div *ngIf="product.isOnSale && product.discountPercentage; else normalPrice">

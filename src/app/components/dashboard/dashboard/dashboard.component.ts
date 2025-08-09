@@ -2,8 +2,10 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ProductsService } from '../../../services/products.service';
 import { CategoriesService } from '../../../services/categories.service';
+import { OrdersService } from '../../../services/orders.service';
 import { Product } from '../../../interfaces/product.interface';
 import { Category } from '../../../interfaces/category.interface';
+import { Order } from '../../../interfaces/order.interface';
 
 @Component({
   selector: 'app-dashboard',
@@ -23,12 +25,16 @@ export class DashboardComponent implements OnInit {
   recentProducts: Product[] = [];
   featuredProducts: Product[] = [];
   categories: Category[] = [];
+  topSellingProducts: Product[] = [];
+  slowMovingProducts: Product[] = [];
+  productsForPromotion: Product[] = [];
 
   isLoading = true;
 
   constructor(
     private productsService: ProductsService,
-    private categoriesService: CategoriesService
+    private categoriesService: CategoriesService,
+    private ordersService: OrdersService
   ) {}
 
   ngOnInit(): void {
@@ -38,10 +44,14 @@ export class DashboardComponent implements OnInit {
   loadDashboardData(): void {
     this.isLoading = true;
 
-    // Load products
+    // Load products and orders for analytics
     this.productsService.getProducts().subscribe(products => {
       this.stats.totalProducts = products.length;
       this.recentProducts = products.slice(0, 5);
+      
+      this.ordersService.getOrders().subscribe(orders => {
+        this.generateProductAnalytics(products, orders);
+      });
     });
 
     // Load featured products
@@ -62,6 +72,65 @@ export class DashboardComponent implements OnInit {
     setTimeout(() => {
       this.isLoading = false;
     }, 1000);
+  }
+
+  generateProductAnalytics(products: Product[], orders: Order[]): void {
+    const productSales = new Map<string, { sales: number; lastSold: Date }>();
+
+    // تحليل المبيعات
+    orders.forEach(order => {
+      order.items.forEach(item => {
+        const product = products.find(p => p.id === item.productId);
+        if (product) {
+          const existing = productSales.get(product.id) || { sales: 0, lastSold: new Date(0) };
+          existing.sales += item.quantity;
+          if (new Date(order.createdAt) > existing.lastSold) {
+            existing.lastSold = new Date(order.createdAt);
+          }
+          productSales.set(product.id, existing);
+        }
+      });
+    });
+
+    // المنتجات الأكثر مبيعاً
+    this.topSellingProducts = products
+      .map(product => ({
+        product,
+        sales: productSales.get(product.id)?.sales || 0,
+        lastSold: productSales.get(product.id)?.lastSold || new Date(0)
+      }))
+      .filter(p => p.sales > 0)
+      .sort((a, b) => b.sales - a.sales)
+      .slice(0, 5)
+      .map(p => p.product);
+
+    // المنتجات بطيئة الحركة
+    this.slowMovingProducts = products
+      .map(product => ({
+        product,
+        sales: productSales.get(product.id)?.sales || 0,
+        lastSold: productSales.get(product.id)?.lastSold || new Date(0)
+      }))
+      .filter(p => {
+        const daysSinceLastSale = p.lastSold.getTime() > 0 
+          ? Math.floor((Date.now() - p.lastSold.getTime()) / (1000 * 60 * 60 * 24))
+          : 999;
+        return daysSinceLastSale > 30;
+      })
+      .sort((a, b) => b.lastSold.getTime() - a.lastSold.getTime())
+      .slice(0, 5)
+      .map(p => p.product);
+
+    // المنتجات المناسبة للعروض
+    this.productsForPromotion = products
+      .map(product => ({
+        product,
+        sales: productSales.get(product.id)?.sales || 0
+      }))
+      .filter(p => p.product.stock > 10 && p.sales < 5)
+      .sort((a, b) => b.product.stock - a.product.stock)
+      .slice(0, 5)
+      .map(p => p.product);
   }
 
   getStatusColor(status: string): string {

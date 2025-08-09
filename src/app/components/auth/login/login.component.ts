@@ -23,10 +23,10 @@ export class LoginComponent {
   ) {}
 
   onSubmit(): void {
-    if (!this.email || !this.password) {
-      this.errorMessage = 'يرجى إدخال البريد الإلكتروني وكلمة المرور';
-      return;
-    }
+    // if (!this.email || !this.password) {
+    //   this.errorMessage = 'يرجى إدخال البريد الإلكتروني وكلمة المرور';
+    //   return;
+    // }
 
     this.isLoading = true;
     this.errorMessage = '';
