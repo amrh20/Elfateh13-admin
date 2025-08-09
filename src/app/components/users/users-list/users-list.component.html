@@ -1,0 +1,44 @@
+<div class="p-6">
+  <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-6">
+    <div>
+      <h1 class="text-2xl font-bold text-gray-900">المستخدمين</h1>
+      <p class="text-sm text-gray-600">إدارة مستخدمي النظام</p>
+    </div>
+  </div>
+
+  <div class="bg-white rounded-lg shadow-sm border border-gray-200">
+    <div class="p-6 border-b border-gray-200">
+      <h3 class="text-lg font-semibold text-gray-900">قائمة المستخدمين</h3>
+    </div>
+    <div class="overflow-x-auto">
+      <table class="min-w-full divide-y divide-gray-200">
+        <thead class="bg-gray-50">
+          <tr>
+            <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">الاسم</th>
+            <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">البريد الإلكتروني</th>
+            <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">الدور</th>
+            <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">الحالة</th>
+            <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">تاريخ الإنشاء</th>
+          </tr>
+        </thead>
+        <tbody class="bg-white divide-y divide-gray-200">
+          <tr *ngFor="let user of users">
+            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{{ user.name }}</td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ user.email }}</td>
+            <td class="px-6 py-4 whitespace-nowrap">
+              <span [class]="user.role === 'admin' ? 'bg-purple-100 text-purple-800' : 'bg-blue-100 text-blue-800' + ' px-2 py-1 rounded-full text-xs font-medium'">
+                {{ user.role === 'admin' ? 'مدير' : 'مستخدم' }}
+              </span>
+            </td>
+            <td class="px-6 py-4 whitespace-nowrap">
+              <span [class]="user.isActive ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800' + ' px-2 py-1 rounded-full text-xs font-medium'">
+                {{ user.isActive ? 'نشط' : 'غير نشط' }}
+              </span>
+            </td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ user.createdAt | date:'short' }}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>

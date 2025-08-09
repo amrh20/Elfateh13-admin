@@ -1,0 +1,42 @@
+<header class="bg-white shadow-sm border-b border-gray-200 px-6 py-4">
+  <div class="flex items-center justify-between">
+    <!-- Page Title -->
+    <div>
+      <h1 class="text-2xl font-bold text-gray-900">لوحة التحكم</h1>
+      <p class="text-sm text-gray-600">مرحباً بك في نظام إدارة الفتح</p>
+    </div>
+
+    <!-- Right Side -->
+    <div class="flex items-center space-x-4">
+      <!-- Notifications -->
+      <button class="p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors relative">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-5 5v-5zM4.83 2.83l4.24 4.24M14.83 2.83l-4.24 4.24M20.83 12.83l-4.24-4.24M3.17 12.83l4.24-4.24M14.83 21.17l-4.24-4.24M4.83 21.17l4.24-4.24"></path>
+        </svg>
+        <span class="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full"></span>
+      </button>
+
+      <!-- User Menu -->
+      <div class="flex items-center space-x-3">
+        <div class="text-right">
+          <p class="text-sm font-medium text-gray-900">المدير</p>
+          <p class="text-xs text-gray-500">admin&#64;example.com</p>
+        </div>
+        <div class="w-8 h-8 bg-gray-300 rounded-full flex items-center justify-center">
+          <svg class="w-4 h-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+          </svg>
+        </div>
+        <button
+          (click)="logout()"
+          class="p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors"
+          title="تسجيل الخروج"
+        >
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path>
+          </svg>
+        </button>
+      </div>
+    </div>
+  </div>
+</header>

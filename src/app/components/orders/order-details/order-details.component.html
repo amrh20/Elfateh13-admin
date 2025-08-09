@@ -1,0 +1,380 @@
+<div class="p-6">
+  <!-- Loading State -->
+  <div *ngIf="isLoading" class="flex justify-center items-center h-64">
+    <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+  </div>
+
+  <!-- Order Details -->
+  <div *ngIf="!isLoading && order" class="space-y-6">
+    <!-- Header -->
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between">
+      <div>
+        <div class="flex items-center space-x-4">
+          <button
+            (click)="goBack()"
+            class="p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors"
+            title="العودة للطلبات"
+          >
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+            </svg>
+          </button>
+          <div>
+            <h1 class="text-2xl font-bold text-gray-900">تفاصيل الطلب #{{ order.id }}</h1>
+            <p class="text-sm text-gray-600">تم إنشاؤه في {{ order.createdAt | date:'longDate' }}</p>
+          </div>
+        </div>
+      </div>
+      <div class="mt-4 sm:mt-0 flex space-x-3">
+        <button
+          (click)="updateOrderStatus()"
+          class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+        >
+          تحديث الحالة
+        </button>
+        <button
+          (click)="updatePaymentStatus()"
+          class="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors"
+        >
+          تحديث الدفع
+        </button>
+        <button
+          (click)="printOrder()"
+          class="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
+        >
+          طباعة
+        </button>
+      </div>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <!-- Order Information -->
+      <div class="lg:col-span-2 space-y-6">
+        <!-- Order Status -->
+        <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+          <h3 class="text-lg font-semibold text-gray-900 mb-4">حالة الطلب</h3>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2">حالة الطلب</label>
+              <span [class]="getStatusColor(order.status) + ' px-3 py-1 rounded-full text-sm font-medium'">
+                {{ getStatusText(order.status) }}
+              </span>
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2">حالة الدفع</label>
+              <span [class]="getPaymentStatusColor(order.paymentStatus) + ' px-3 py-1 rounded-full text-sm font-medium'">
+                {{ getPaymentStatusText(order.paymentStatus) }}
+              </span>
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2">طريقة الدفع</label>
+              <p class="text-sm text-gray-900">{{ order.paymentMethod }}</p>
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2">آخر تحديث</label>
+              <p class="text-sm text-gray-900">{{ order.updatedAt | date:'short' }}</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Order Items -->
+        <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+          <h3 class="text-lg font-semibold text-gray-900 mb-4">المنتجات المطلوبة</h3>
+          <div class="space-y-4">
+            <div *ngFor="let item of order.items" class="flex items-center space-x-4 p-4 border border-gray-200 rounded-lg">
+              <img [src]="item.image" [alt]="item.nameAr" class="w-16 h-16 rounded-lg object-cover">
+              <div class="flex-1">
+                <h4 class="text-sm font-medium text-gray-900">{{ item.nameAr }}</h4>
+                <p class="text-sm text-gray-600">{{ item.name }}</p>
+                <p class="text-sm text-gray-500">الكمية: {{ item.quantity }}</p>
+              </div>
+              <div class="text-left">
+                <p class="text-sm font-medium text-gray-900">{{ item.price | currency:'EGP':'symbol' }}</p>
+                <p class="text-sm text-gray-600">المجموع: {{ item.total | currency:'EGP':'symbol' }}</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Order History -->
+        <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+          <h3 class="text-lg font-semibold text-gray-900 mb-4">سجل الطلب</h3>
+          <div class="space-y-4">
+            <div *ngFor="let history of order.statusHistory" class="flex items-start space-x-4">
+              <div class="w-3 h-3 bg-blue-600 rounded-full mt-2"></div>
+              <div class="flex-1">
+                <div class="flex items-center space-x-2">
+                  <span [class]="getStatusColor(history.status) + ' px-2 py-1 rounded-full text-xs font-medium'">
+                    {{ getStatusText(history.status) }}
+                  </span>
+                  <span class="text-sm text-gray-500">{{ history.date | date:'short' }}</span>
+                </div>
+                <p class="text-sm text-gray-700 mt-1">{{ history.note }}</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Sidebar -->
+      <div class="space-y-6">
+        <!-- Customer Information -->
+        <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+          <h3 class="text-lg font-semibold text-gray-900 mb-4">معلومات العميل</h3>
+          <div class="space-y-3">
+            <div>
+              <label class="block text-sm font-medium text-gray-700">الاسم</label>
+              <p class="text-sm text-gray-900">{{ order.userName }}</p>
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700">البريد الإلكتروني</label>
+              <p class="text-sm text-gray-900">{{ order.userEmail }}</p>
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700">رقم الهاتف</label>
+              <p class="text-sm text-gray-900">{{ order.userPhone }}</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Shipping Address -->
+        <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+          <h3 class="text-lg font-semibold text-gray-900 mb-4">عنوان التوصيل</h3>
+          <div class="space-y-2">
+            <p class="text-sm text-gray-900">{{ order.shippingAddress.name }}</p>
+            <p class="text-sm text-gray-700">{{ order.shippingAddress.address }}</p>
+            <p class="text-sm text-gray-700">{{ order.shippingAddress.city }}</p>
+            <p class="text-sm text-gray-700">الرمز البريدي: {{ order.shippingAddress.postalCode }}</p>
+            <p class="text-sm text-gray-700">{{ order.shippingAddress.phone }}</p>
+          </div>
+        </div>
+
+        <!-- Order Summary -->
+        <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+          <h3 class="text-lg font-semibold text-gray-900 mb-4">ملخص الطلب</h3>
+          <div class="space-y-3">
+            <div class="flex justify-between">
+              <span class="text-sm text-gray-600">المجموع الفرعي</span>
+              <span class="text-sm text-gray-900">{{ order.subtotal | currency:'EGP':'symbol' }}</span>
+            </div>
+            <div class="flex justify-between">
+              <span class="text-sm text-gray-600">الشحن</span>
+              <span class="text-sm text-gray-900">{{ order.shipping | currency:'EGP':'symbol' }}</span>
+            </div>
+            <div class="border-t pt-3">
+              <div class="flex justify-between">
+                <span class="text-base font-medium text-gray-900">الإجمالي</span>
+                <span class="text-base font-bold text-gray-900">{{ order.totalAmount | currency:'EGP':'symbol' }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Notes -->
+        <div *ngIf="order.notes" class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+          <h3 class="text-lg font-semibold text-gray-900 mb-4">ملاحظات</h3>
+          <p class="text-sm text-gray-700">{{ order.notes }}</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Not Found State -->
+  <div *ngIf="!isLoading && !order" class="text-center py-12">
+    <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+    </svg>
+    <h3 class="mt-2 text-sm font-medium text-gray-900">الطلب غير موجود</h3>
+    <p class="mt-1 text-sm text-gray-500">الطلب الذي تبحث عنه غير موجود أو تم حذفه.</p>
+    <div class="mt-6">
+      <button
+        (click)="goBack()"
+        class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+      >
+        العودة للطلبات
+      </button>
+    </div>
+  </div>
+
+  <!-- Order Status Update Modal -->
+  <div *ngIf="showStatusModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
+    <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
+      <div class="mt-3">
+        <h3 class="text-lg font-medium text-gray-900 mb-4">تحديث حالة الطلب #{{ orderId }}</h3>
+        <div class="space-y-4">
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">حالة الطلب الجديدة</label>
+            <select
+              [(ngModel)]="newOrderStatus"
+              class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            >
+              <option value="">اختر الحالة الجديدة</option>
+              <option value="pending">في الانتظار</option>
+              <option value="confirmed">مؤكد</option>
+              <option value="processing">قيد المعالجة</option>
+              <option value="shipped">تم الشحن</option>
+              <option value="delivered">تم التوصيل</option>
+              <option value="cancelled">ملغي</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">ملاحظات (اختياري)</label>
+            <textarea
+              [(ngModel)]="statusNotes"
+              rows="3"
+              class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              placeholder="أضف ملاحظات حول تحديث الحالة..."
+            ></textarea>
+          </div>
+        </div>
+        <div class="flex justify-end space-x-3 mt-6">
+          <button
+            (click)="cancelStatusUpdate()"
+            class="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors"
+          >
+            إلغاء
+          </button>
+          <button
+            (click)="confirmStatusUpdate()"
+            class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+          >
+            تحديث الحالة
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Payment Status Update Modal -->
+  <div *ngIf="showPaymentModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
+    <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
+      <div class="mt-3">
+        <h3 class="text-lg font-medium text-gray-900 mb-4">تحديث حالة الدفع #{{ orderId }}</h3>
+        <div class="space-y-4">
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">حالة الدفع الجديدة</label>
+            <select
+              [(ngModel)]="newPaymentStatus"
+              class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            >
+              <option value="">اختر حالة الدفع الجديدة</option>
+              <option value="pending">في الانتظار</option>
+              <option value="paid">مدفوع</option>
+              <option value="failed">فشل</option>
+              <option value="refunded">مسترد</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">ملاحظات (اختياري)</label>
+            <textarea
+              [(ngModel)]="paymentNotes"
+              rows="3"
+              class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              placeholder="أضف ملاحظات حول تحديث الدفع..."
+            ></textarea>
+          </div>
+        </div>
+        <div class="flex justify-end space-x-3 mt-6">
+          <button
+            (click)="cancelPaymentUpdate()"
+            class="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors"
+          >
+            إلغاء
+          </button>
+          <button
+            (click)="confirmPaymentUpdate()"
+            class="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors"
+          >
+            تحديث الدفع
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Print Preview Modal -->
+  <div *ngIf="showPrintModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
+    <div class="relative top-10 mx-auto p-5 border w-11/12 max-w-4xl shadow-lg rounded-md bg-white">
+      <div class="mt-3">
+        <div class="flex justify-between items-center mb-4">
+          <h3 class="text-lg font-medium text-gray-900">معاينة الطباعة - الطلب #{{ orderId }}</h3>
+          <button
+            (click)="closePrintModal()"
+            class="text-gray-400 hover:text-gray-600"
+          >
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+            </svg>
+          </button>
+        </div>
+        
+        <!-- Print Preview Content -->
+        <div class="bg-white p-6 border border-gray-200 rounded-lg">
+          <div class="text-center mb-6">
+            <h1 class="text-2xl font-bold text-gray-900">فاتورة الطلب</h1>
+            <p class="text-sm text-gray-600">رقم الطلب: #{{ orderId }}</p>
+            <p class="text-sm text-gray-600">تاريخ الطلب: {{ order?.createdAt | date:'longDate' }}</p>
+          </div>
+          
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+            <div>
+              <h3 class="text-lg font-semibold text-gray-900 mb-2">معلومات العميل</h3>
+              <p class="text-sm text-gray-700">{{ order?.userName }}</p>
+              <p class="text-sm text-gray-700">{{ order?.userEmail }}</p>
+              <p class="text-sm text-gray-700">{{ order?.userPhone }}</p>
+            </div>
+            <div>
+              <h3 class="text-lg font-semibold text-gray-900 mb-2">عنوان التوصيل</h3>
+              <p class="text-sm text-gray-700">{{ order?.shippingAddress?.name }}</p>
+              <p class="text-sm text-gray-700">{{ order?.shippingAddress?.address }}</p>
+              <p class="text-sm text-gray-700">{{ order?.shippingAddress?.city }}</p>
+            </div>
+          </div>
+          
+          <div class="mb-6">
+            <h3 class="text-lg font-semibold text-gray-900 mb-2">المنتجات المطلوبة</h3>
+            <div class="border border-gray-200 rounded-lg">
+              <div *ngFor="let item of order?.items" class="flex justify-between items-center p-3 border-b border-gray-200 last:border-b-0">
+                <div>
+                  <p class="text-sm font-medium text-gray-900">{{ item.nameAr }}</p>
+                  <p class="text-xs text-gray-600">الكمية: {{ item.quantity }}</p>
+                </div>
+                <p class="text-sm font-medium text-gray-900">{{ item.total | currency:'EGP':'symbol' }}</p>
+              </div>
+            </div>
+          </div>
+          
+          <div class="border-t pt-4">
+            <div class="flex justify-between mb-2">
+              <span class="text-sm text-gray-600">المجموع الفرعي:</span>
+              <span class="text-sm text-gray-900">{{ order?.subtotal | currency:'EGP':'symbol' }}</span>
+            </div>
+            <div class="flex justify-between mb-2">
+              <span class="text-sm text-gray-600">الشحن:</span>
+              <span class="text-sm text-gray-900">{{ order?.shipping | currency:'EGP':'symbol' }}</span>
+            </div>
+            <div class="flex justify-between text-lg font-bold">
+              <span class="text-gray-900">الإجمالي:</span>
+              <span class="text-gray-900">{{ order?.totalAmount | currency:'EGP':'symbol' }}</span>
+            </div>
+          </div>
+        </div>
+        
+        <div class="flex justify-end space-x-3 mt-6">
+          <button
+            (click)="closePrintModal()"
+            class="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors"
+          >
+            إلغاء
+          </button>
+          <button
+            (click)="printOrder()"
+            class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
+          >
+            طباعة
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div> 

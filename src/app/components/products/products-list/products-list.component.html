@@ -1,0 +1,165 @@
+<div class="p-6">
+  <!-- Header -->
+  <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-6">
+    <div>
+      <h1 class="text-2xl font-bold text-gray-900">المنتجات</h1>
+      <p class="text-sm text-gray-600">إدارة جميع منتجات المتجر</p>
+    </div>
+    <button
+      (click)="addProduct()"
+      class="mt-4 sm:mt-0 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors flex items-center"
+    >
+      <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+      </svg>
+      إضافة منتج جديد
+    </button>
+  </div>
+
+  <!-- Filters -->
+  <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <!-- Search -->
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-2">البحث</label>
+        <input
+          type="text"
+          [(ngModel)]="searchTerm"
+          (input)="onSearchChange()"
+          placeholder="البحث في المنتجات..."
+          class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+        >
+      </div>
+
+      <!-- Category Filter -->
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-2">الصنف</label>
+        <select
+          [(ngModel)]="selectedCategory"
+          (change)="onCategoryChange()"
+          class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+        >
+                  <option value="">جميع الأصناف</option>
+        <option *ngFor="let category of getCategories()" [value]="category">{{ getCategoryNameAr(category) }}</option>
+        </select>
+      </div>
+
+      <!-- Sort -->
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-2">الترتيب</label>
+        <select
+          [(ngModel)]="sortBy"
+          (change)="onSortChange()"
+          class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+        >
+          <option value="name">الاسم</option>
+          <option value="price">السعر</option>
+          <option value="rating">التقييم</option>
+          <option value="stock">المخزون</option>
+        </select>
+      </div>
+    </div>
+  </div>
+
+  <!-- Loading State -->
+  <div *ngIf="isLoading" class="flex items-center justify-center h-64">
+    <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
+  </div>
+
+  <!-- Products Grid -->
+  <div *ngIf="!isLoading" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+    <div *ngFor="let product of filteredProducts" class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden hover:shadow-md transition-shadow">
+      <!-- Product Image -->
+      <div class="relative">
+        <img [src]="product.images[0]" [alt]="product.name" class="w-full h-48 object-cover">
+        <div class="absolute top-2 right-2">
+          <span [class]="getStatusBadge(product).class + ' px-2 py-1 rounded-full text-xs font-medium'">
+            {{ getStatusBadge(product).text }}
+          </span>
+        </div>
+        <div *ngIf="product.discount" class="absolute top-2 left-2">
+          <span class="bg-red-500 text-white px-2 py-1 rounded-full text-xs font-medium">
+            {{ product.discount }}% خصم
+          </span>
+        </div>
+      </div>
+
+      <!-- Product Info -->
+      <div class="p-4">
+        <h3 class="text-lg font-semibold text-gray-900 mb-1">{{ product.nameAr }}</h3>
+
+        <p class="text-sm text-gray-500 mb-3 line-clamp-2">{{ product.descriptionAr }}</p>
+
+        <!-- Price -->
+        <div class="flex items-center mb-3">
+          <span class="text-lg font-bold text-gray-900">{{ product.price | currency:'EGP' }}</span>
+          <span *ngIf="product.originalPrice" class="text-sm text-gray-500 line-through mr-2">
+            {{ product.originalPrice | currency:'EGP' }}
+          </span>
+        </div>
+
+        <!-- Rating -->
+        <div class="flex items-center mb-3">
+          <div class="flex items-center">
+            <svg class="w-4 h-4 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
+              <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path>
+            </svg>
+            <span class="text-sm text-gray-600 mr-1">{{ product.rating }}</span>
+            <span class="text-sm text-gray-500">({{ product.reviewsCount }})</span>
+          </div>
+        </div>
+
+        <!-- Stock -->
+                  <div class="flex items-center justify-between mb-4">
+            <span class="text-sm text-gray-600">المخزون: {{ product.stock }}</span>
+            <span class="text-sm text-gray-600">{{ getCategoryNameAr(product.category) }}</span>
+          </div>
+          
+          <!-- Sale Information -->
+          <div *ngIf="product.isOnSale && product.discountPercentage" class="mb-3">
+            <div class="flex items-center justify-between">
+              <span class="text-sm line-through text-gray-500">{{ product.price | currency:'EGP' }}</span>
+              <span class="text-sm font-bold text-red-600">{{ calculateDiscountedPrice(product) | currency:'EGP' }}</span>
+            </div>
+            <div class="flex items-center justify-between">
+              <span class="text-xs text-red-600 font-medium">خصم {{ product.discountPercentage }}%</span>
+              <span *ngIf="product.saleQuantity" class="text-xs text-gray-500">متوفر للعرض: {{ product.saleQuantity }}</span>
+            </div>
+          </div>
+
+        <!-- Actions -->
+        <div class="flex space-x-2">
+          <button
+            (click)="editProduct(product.id)"
+            class="flex-1 bg-blue-600 text-white px-3 py-2 rounded-lg hover:bg-blue-700 transition-colors text-sm"
+          >
+            تعديل
+          </button>
+          <button
+            (click)="deleteProduct(product.id)"
+            class="flex-1 bg-red-600 text-white px-3 py-2 rounded-lg hover:bg-red-700 transition-colors text-sm"
+          >
+            حذف
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Empty State -->
+  <div *ngIf="!isLoading && filteredProducts.length === 0" class="text-center py-12">
+    <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path>
+    </svg>
+    <h3 class="mt-2 text-sm font-medium text-gray-900">لا توجد منتجات</h3>
+    <p class="mt-1 text-sm text-gray-500">ابدأ بإضافة منتج جديد</p>
+    <div class="mt-6">
+      <button
+        (click)="addProduct()"
+        class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
+      >
+        إضافة منتج جديد
+      </button>
+    </div>
+  </div>
+</div>
