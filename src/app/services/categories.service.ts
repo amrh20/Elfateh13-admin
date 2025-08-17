@@ -1,7 +1,9 @@
 import { Injectable } from '@angular/core';
 import { Observable, of } from 'rxjs';
-import { delay } from 'rxjs/operators';
+import { delay, catchError, map, switchMap } from 'rxjs/operators';
 import { Category, CategoryFormData } from '../interfaces/category.interface';
+import { ApiService } from './api.service';
+import { AuthService } from './auth.service';
 
 @Injectable({
   providedIn: 'root'
@@ -94,10 +96,110 @@ export class CategoriesService {
     }
   ];
 
-  constructor() { }
+  constructor(
+    private apiService: ApiService,
+    private authService: AuthService
+  ) { }
 
   getCategories(): Observable<Category[]> {
-    return of(this.mockCategories).pipe(delay(500));
+    // Get auth token for admin endpoint
+    const token = localStorage.getItem('authToken');
+    
+    if (!token) {
+      console.warn('No auth token found, trying public endpoint');
+      return this.getCategoriesFromPublic();
+    }
+
+    const headers = {
+      'Authorization': `Bearer ${token}`
+    };
+
+    return this.apiService.get<{data: Category[], success: boolean, message: string}>('/categories/admin', {}, headers).pipe(
+      map(response => {
+        console.log('API Response for /categories/admin:', response);
+        if (response.success && response.data) {
+          // Map API response to Category interface
+          const mappedCategories = response.data.map(apiCategory => this.mapApiResponseToCategory(apiCategory));
+          console.log('Mapped categories:', mappedCategories);
+          return { success: true, data: mappedCategories };
+        } else {
+          console.warn('Admin endpoint returned unsuccessful response, trying public endpoint');
+          return { success: false, data: null };
+        }
+      }),
+      switchMap(result => {
+        if (result.success && result.data) {
+          return of(result.data);
+        } else {
+          console.log('Trying public endpoint as fallback');
+          return this.getCategoriesFromPublic();
+        }
+      }),
+      catchError(error => {
+        console.error('Error calling /categories/admin API:', error);
+        console.log('Trying public endpoint as fallback');
+        return this.getCategoriesFromPublic();
+      })
+    );
+  }
+
+  // Get public categories for comparison
+  getPublicCategories(): Observable<any> {
+    console.log('Getting public categories for comparison');
+    
+    return this.apiService.get<any>('/categories').pipe(
+      map(response => {
+        console.log('Public categories response:', response);
+        return response;
+      }),
+      catchError(error => {
+        console.error('Error getting public categories:', error);
+        return of({ error: error.message || 'Unknown error' });
+      })
+    );
+  }
+
+  // Get categories from public endpoint as fallback
+  getCategoriesFromPublic(): Observable<Category[]> {
+    console.log('Getting categories from public endpoint as fallback');
+    
+    return this.apiService.get<{data: any[], success: boolean, count: number}>('/categories').pipe(
+      map(response => {
+        console.log('Public categories fallback response:', response);
+        if (response.success && response.data) {
+          const mappedCategories = response.data.map(apiCategory => this.mapApiResponseToCategory(apiCategory));
+          console.log('Mapped categories from public endpoint:', mappedCategories);
+          return mappedCategories;
+        } else {
+          console.warn('Public endpoint returned unsuccessful response:', response);
+          return this.mockCategories;
+        }
+      }),
+      catchError(error => {
+        console.error('Error getting categories from public endpoint:', error);
+        console.log('Falling back to mock data');
+        return of(this.mockCategories).pipe(delay(500));
+      })
+    );
+  }
+
+  // Map API response to Category interface
+  private mapApiResponseToCategory(apiCategory: any): Category {
+    return {
+      id: apiCategory._id || apiCategory.id,
+      name: apiCategory.name || '',
+      nameAr: apiCategory.nameAr || apiCategory.name || '', // Fallback to English name
+      description: apiCategory.description || '',
+      descriptionAr: apiCategory.descriptionAr || apiCategory.description || '', // Fallback to English description
+      icon: apiCategory.icon || 'folder', // Default icon
+      image: apiCategory.image || '',
+      type: 'main', // Default to main category
+      subCategories: [], // Empty array for now
+      productCount: apiCategory.productCount || 0,
+      isActive: apiCategory.isActive || true,
+      createdAt: new Date(apiCategory.createdAt),
+      updatedAt: new Date(apiCategory.updatedAt)
+    };
   }
 
   getCategory(id: string): Observable<Category | undefined> {

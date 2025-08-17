@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { ProductsService } from '../../../services/products.service';
 import { CategoriesService } from '../../../services/categories.service';
 import { OrdersService } from '../../../services/orders.service';
+import { AuthService, AdminUser } from '../../../services/auth.service';
 import { Product } from '../../../interfaces/product.interface';
 import { Category } from '../../../interfaces/category.interface';
 import { Order } from '../../../interfaces/order.interface';
@@ -30,15 +31,23 @@ export class DashboardComponent implements OnInit {
   productsForPromotion: Product[] = [];
 
   isLoading = true;
+  currentUser: AdminUser | null = null;
 
   constructor(
     private productsService: ProductsService,
     private categoriesService: CategoriesService,
-    private ordersService: OrdersService
+    private ordersService: OrdersService,
+    private authService: AuthService
   ) {}
 
   ngOnInit(): void {
     this.loadDashboardData();
+    this.loadCurrentUser();
+  }
+
+  loadCurrentUser(): void {
+    this.currentUser = this.authService.getCurrentUser();
+    console.log('Current user loaded:', this.currentUser);
   }
 
   loadDashboardData(): void {

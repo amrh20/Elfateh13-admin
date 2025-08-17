@@ -1,9 +1,16 @@
-import { Component, OnInit, OnDestroy, HostListener } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
-import { AuthService } from '../../../services/auth.service';
-import { NotificationService, Notification } from '../../../services/notification.service';
-import { Subscription } from 'rxjs';
+import { AuthService, AdminUser } from '../../../services/auth.service';
+
+interface Notification {
+  id: string;
+  title: string;
+  message: string;
+  type: 'order' | 'product' | 'system' | 'promotion';
+  timestamp: Date;
+  isRead: boolean;
+}
 
 @Component({
   selector: 'app-header',
@@ -12,104 +19,115 @@ import { Subscription } from 'rxjs';
   templateUrl: './header.component.html',
   styleUrl: './header.component.scss'
 })
-export class HeaderComponent implements OnInit, OnDestroy {
-  unreadCount = 0;
+export class HeaderComponent implements OnInit {
   showNotifications = false;
-  recentNotifications: Notification[] = [];
-  private unreadCountSubscription?: Subscription;
-  private notificationsSubscription?: Subscription;
+  unreadCount = 3;
+  showLogoutDialog = false;
+  currentUser: AdminUser | null = null;
+  
+  recentNotifications: Notification[] = [
+    {
+      id: '1',
+      title: 'طلب جديد',
+      message: 'تم استلام طلب جديد من العميل أحمد محمد',
+      type: 'order',
+      timestamp: new Date(Date.now() - 1000 * 60 * 30), // 30 minutes ago
+      isRead: false
+    },
+    {
+      id: '2',
+      title: 'منتج منخفض المخزون',
+      message: 'المنتج "منظف الأرضيات" وصل إلى الحد الأدنى للمخزون',
+      type: 'product',
+      timestamp: new Date(Date.now() - 1000 * 60 * 60 * 2), // 2 hours ago
+      isRead: false
+    },
+    {
+      id: '3',
+      title: 'تحديث النظام',
+      message: 'تم تحديث النظام إلى الإصدار الجديد بنجاح',
+      type: 'system',
+      timestamp: new Date(Date.now() - 1000 * 60 * 60 * 24), // 1 day ago
+      isRead: true
+    }
+  ];
 
   constructor(
-    private authService: AuthService,
-    private notificationService: NotificationService,
-    private router: Router
+    private router: Router,
+    private authService: AuthService
   ) {}
 
   ngOnInit(): void {
-    this.unreadCountSubscription = this.notificationService.getUnreadCount().subscribe(count => {
-      this.unreadCount = count;
-    });
-
-    this.notificationsSubscription = this.notificationService.getNotifications().subscribe(notifications => {
-      this.recentNotifications = notifications.slice(0, 5); // عرض آخر 5 إشعارات فقط
-    });
+    this.updateUnreadCount();
+    this.loadCurrentUser();
   }
 
-  ngOnDestroy(): void {
-    if (this.unreadCountSubscription) {
-      this.unreadCountSubscription.unsubscribe();
-    }
-    if (this.notificationsSubscription) {
-      this.notificationsSubscription.unsubscribe();
-    }
+  loadCurrentUser(): void {
+    this.currentUser = this.authService.getCurrentUser();
+    console.log('Current user loaded in header:', this.currentUser);
   }
-  
-  get currentUser$() {
-    return this.authService.currentUser$;
+
+  updateUnreadCount(): void {
+    this.unreadCount = this.recentNotifications.filter(n => !n.isRead).length;
   }
 
   toggleNotifications(): void {
     this.showNotifications = !this.showNotifications;
   }
 
-  @HostListener('document:click', ['$event'])
-  onDocumentClick(event: Event): void {
-    const target = event.target as HTMLElement;
-    if (!target.closest('.relative')) {
-      this.showNotifications = false;
-    }
-  }
-
-  handleNotificationClick(notification: Notification): void {
-    // تحديد الإشعار كمقروء
-    this.notificationService.markAsRead(notification.id);
-    
-    // إغلاق القائمة المنسدلة
-    this.showNotifications = false;
-
-    // التنقل حسب نوع الإشعار
-    if (notification.type === 'order' && notification.orderId) {
-      this.router.navigate(['/orders', notification.orderId]);
-    } else if (notification.type === 'product' && notification.productId) {
-      this.router.navigate(['/products', notification.productId]);
-    } else {
-      // للأنواع الأخرى، الانتقال إلى صفحة الإشعارات
-      this.router.navigate(['/notifications']);
-    }
-  }
-
   markAllAsRead(): void {
-    this.notificationService.markAllAsRead();
+    this.recentNotifications.forEach(notification => {
+      notification.isRead = true;
+    });
+    this.updateUnreadCount();
   }
 
   goToNotifications(): void {
-    this.showNotifications = false;
     this.router.navigate(['/notifications']);
+    this.showNotifications = false;
   }
 
-  logout(): void {
-    this.authService.logout();
+  handleNotificationClick(notification: Notification): void {
+    if (!notification.isRead) {
+      notification.isRead = true;
+      this.updateUnreadCount();
+    }
+    
+    // Handle navigation based on notification type
+    switch (notification.type) {
+      case 'order':
+        this.router.navigate(['/orders']);
+        break;
+      case 'product':
+        this.router.navigate(['/products']);
+        break;
+      case 'system':
+        this.router.navigate(['/settings']);
+        break;
+      case 'promotion':
+        this.router.navigate(['/reports']);
+        break;
+    }
+    
+    this.showNotifications = false;
   }
 
   getNotificationIconClass(type: string): string {
-    switch (type) {
-      case 'order':
-        return 'bg-blue-100 text-blue-600';
-      case 'product':
-        return 'bg-green-100 text-green-600';
-      case 'system':
-        return 'bg-purple-100 text-purple-600';
-      case 'promotion':
-        return 'bg-yellow-100 text-yellow-600';
-      default:
-        return 'bg-gray-100 text-gray-600';
-    }
+    const baseClasses = 'w-8 h-8 rounded-full flex items-center justify-center';
+    const typeClasses = {
+      order: 'bg-blue-100 text-blue-600',
+      product: 'bg-green-100 text-green-600',
+      system: 'bg-purple-100 text-purple-600',
+      promotion: 'bg-yellow-100 text-yellow-600'
+    };
+    
+    return `${baseClasses} ${typeClasses[type as keyof typeof typeClasses] || 'bg-gray-100 text-gray-600'}`;
   }
 
   getTimeAgo(timestamp: Date): string {
     const now = new Date();
     const diffInSeconds = Math.floor((now.getTime() - timestamp.getTime()) / 1000);
-
+    
     if (diffInSeconds < 60) {
       return 'الآن';
     } else if (diffInSeconds < 3600) {
@@ -118,11 +136,23 @@ export class HeaderComponent implements OnInit, OnDestroy {
     } else if (diffInSeconds < 86400) {
       const hours = Math.floor(diffInSeconds / 3600);
       return `منذ ${hours} ساعة`;
-    } else if (diffInSeconds < 2592000) {
+    } else {
       const days = Math.floor(diffInSeconds / 86400);
       return `منذ ${days} يوم`;
-    } else {
-      return timestamp.toLocaleDateString('ar-EG');
     }
+  }
+
+  showLogoutConfirmation(): void {
+    this.showLogoutDialog = true;
+  }
+
+  cancelLogout(): void {
+    this.showLogoutDialog = false;
+  }
+
+  confirmLogout(): void {
+    this.showLogoutDialog = false;
+    this.authService.logout();
+    this.router.navigate(['/login']);
   }
 }

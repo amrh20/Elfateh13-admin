@@ -6,6 +6,23 @@
 
   <!-- Dashboard Content -->
   <div *ngIf="!isLoading" class="space-y-6">
+    <!-- User Info Section -->
+    <div *ngIf="currentUser" class="bg-gradient-to-r from-blue-500 to-indigo-600 rounded-lg shadow-md p-6 text-white">
+      <div class="flex items-center justify-between">
+        <div>
+          <h2 class="text-2xl font-bold mb-2">مرحباً، {{ currentUser.username }}!</h2>
+          <p class="text-blue-100">{{ currentUser.email }}</p>
+          <span class="inline-block mt-2 px-3 py-1 bg-white bg-opacity-20 rounded-full text-sm">
+            {{ currentUser.role === 'super-admin' ? 'مدير عام' : 'مدير' }}
+          </span>
+        </div>
+        <div class="text-right">
+          <p class="text-sm text-blue-100">معرف المستخدم</p>
+          <p class="text-xs font-mono">{{ currentUser.id }}</p>
+        </div>
+      </div>
+    </div>
+
     <!-- Stats Cards -->
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
       <!-- Total Products -->
