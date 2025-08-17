@@ -1,7 +1,6 @@
 import { Injectable } from '@angular/core';
 import { Observable, of } from 'rxjs';
 import { delay, catchError, map, switchMap } from 'rxjs/operators';
-import { Category, CategoryFormData } from '../interfaces/category.interface';
 import { ApiService } from './api.service';
 import { AuthService } from './auth.service';
 
@@ -9,7 +8,7 @@ import { AuthService } from './auth.service';
   providedIn: 'root'
 })
 export class CategoriesService {
-  private mockCategories: Category[] = [
+  private mockCategories: any[] = [
     {
       id: '1',
       name: 'Cleaners',
@@ -101,7 +100,7 @@ export class CategoriesService {
     private authService: AuthService
   ) { }
 
-  getCategories(): Observable<Category[]> {
+  getCategories(): Observable<any[]> {
     // Get auth token for admin endpoint
     const token = localStorage.getItem('authToken');
     
@@ -114,12 +113,12 @@ export class CategoriesService {
       'Authorization': `Bearer ${token}`
     };
 
-    return this.apiService.get<{data: Category[], success: boolean, message: string}>('/categories/admin', {}, headers).pipe(
-      map(response => {
+    return this.apiService.get<any>('/categories/admin', {}, headers).pipe(
+      map((response: any) => {
         console.log('API Response for /categories/admin:', response);
         if (response.success && response.data) {
           // Map API response to Category interface
-          const mappedCategories = response.data.map(apiCategory => this.mapApiResponseToCategory(apiCategory));
+          const mappedCategories = response.data.map((apiCategory: any) => this.mapApiResponseToCategory(apiCategory));
           console.log('Mapped categories:', mappedCategories);
           return { success: true, data: mappedCategories };
         } else {
@@ -127,7 +126,7 @@ export class CategoriesService {
           return { success: false, data: null };
         }
       }),
-      switchMap(result => {
+      switchMap((result: any) => {
         if (result.success && result.data) {
           return of(result.data);
         } else {
@@ -135,7 +134,7 @@ export class CategoriesService {
           return this.getCategoriesFromPublic();
         }
       }),
-      catchError(error => {
+      catchError((error: any) => {
         console.error('Error calling /categories/admin API:', error);
         console.log('Trying public endpoint as fallback');
         return this.getCategoriesFromPublic();
@@ -148,11 +147,11 @@ export class CategoriesService {
     console.log('Getting public categories for comparison');
     
     return this.apiService.get<any>('/categories').pipe(
-      map(response => {
+      map((response: any) => {
         console.log('Public categories response:', response);
         return response;
       }),
-      catchError(error => {
+      catchError((error: any) => {
         console.error('Error getting public categories:', error);
         return of({ error: error.message || 'Unknown error' });
       })
@@ -160,14 +159,14 @@ export class CategoriesService {
   }
 
   // Get categories from public endpoint as fallback
-  getCategoriesFromPublic(): Observable<Category[]> {
+  getCategoriesFromPublic(): Observable<any[]> {
     console.log('Getting categories from public endpoint as fallback');
     
-    return this.apiService.get<{data: any[], success: boolean, count: number}>('/categories').pipe(
-      map(response => {
+    return this.apiService.get<any>('/categories').pipe(
+      map((response: any) => {
         console.log('Public categories fallback response:', response);
         if (response.success && response.data) {
-          const mappedCategories = response.data.map(apiCategory => this.mapApiResponseToCategory(apiCategory));
+          const mappedCategories = response.data.map((apiCategory: any) => this.mapApiResponseToCategory(apiCategory));
           console.log('Mapped categories from public endpoint:', mappedCategories);
           return mappedCategories;
         } else {
@@ -175,7 +174,7 @@ export class CategoriesService {
           return this.mockCategories;
         }
       }),
-      catchError(error => {
+      catchError((error: any) => {
         console.error('Error getting categories from public endpoint:', error);
         console.log('Falling back to mock data');
         return of(this.mockCategories).pipe(delay(500));
@@ -184,7 +183,7 @@ export class CategoriesService {
   }
 
   // Map API response to Category interface
-  private mapApiResponseToCategory(apiCategory: any): Category {
+  private mapApiResponseToCategory(apiCategory: any): any {
     return {
       id: apiCategory._id || apiCategory.id,
       name: apiCategory.name || '',
@@ -202,13 +201,13 @@ export class CategoriesService {
     };
   }
 
-  getCategory(id: string): Observable<Category | undefined> {
-    const category = this.mockCategories.find(c => c.id === id);
+  getCategory(id: string): Observable<any | undefined> {
+    const category = this.mockCategories.find((c: any) => c.id === id);
     return of(category).pipe(delay(300));
   }
 
-  createCategory(categoryData: CategoryFormData): Observable<Category> {
-    const newCategory: Category = {
+  createCategory(categoryData: any): Observable<any> {
+    const newCategory: any = {
       id: Date.now().toString(),
       ...categoryData,
       image: categoryData.image ? 'https://via.placeholder.com/200x150' : undefined,
@@ -221,8 +220,8 @@ export class CategoriesService {
     return of(newCategory).pipe(delay(800));
   }
 
-  updateCategory(id: string, categoryData: Partial<CategoryFormData>): Observable<Category> {
-    const index = this.mockCategories.findIndex(c => c.id === id);
+  updateCategory(id: string, categoryData: Partial<any>): Observable<any> {
+    const index = this.mockCategories.findIndex((c: any) => c.id === id);
     if (index !== -1) {
       // Handle image separately to avoid type conflicts
       const { image, ...otherData } = categoryData;
@@ -244,7 +243,7 @@ export class CategoriesService {
   }
 
   deleteCategory(id: string): Observable<boolean> {
-    const index = this.mockCategories.findIndex(c => c.id === id);
+    const index = this.mockCategories.findIndex((c: any) => c.id === id);
     if (index !== -1) {
       this.mockCategories.splice(index, 1);
       return of(true).pipe(delay(500));
@@ -252,18 +251,18 @@ export class CategoriesService {
     return of(false).pipe(delay(500));
   }
 
-  getActiveCategories(): Observable<Category[]> {
-    const active = this.mockCategories.filter(c => c.isActive);
+  getActiveCategories(): Observable<any[]> {
+    const active = this.mockCategories.filter((c: any) => c.isActive);
     return of(active).pipe(delay(300));
   }
 
-  getMainCategories(): Observable<Category[]> {
-    const mainCategories = this.mockCategories.filter(c => c.type === 'main');
+  getMainCategories(): Observable<any[]> {
+    const mainCategories = this.mockCategories.filter((c: any) => c.type === 'main');
     return of(mainCategories).pipe(delay(300));
   }
 
-  getSubCategories(parentId: string): Observable<Category[]> {
-    const subCategories = this.mockCategories.filter(c => c.type === 'sub' && c.parentId === parentId);
+  getSubCategories(parentId: string): Observable<any[]> {
+    const subCategories = this.mockCategories.filter((c: any) => c.type === 'sub' && c.parentId === parentId);
     return of(subCategories).pipe(delay(300));
   }
 }

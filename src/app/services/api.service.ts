@@ -25,6 +25,10 @@ export class ApiService {
    * @param headers - Additional headers
    */
   get<T>(endpoint: string, params?: any, headers?: any): Observable<T> {
+    console.log(`🌐 API GET Request: ${this.baseUrl}${endpoint}`);
+    console.log('📋 Query params:', params);
+    console.log('📋 Headers:', headers);
+    
     let httpParams = new HttpParams();
     
     if (params) {

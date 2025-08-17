@@ -63,11 +63,10 @@
             </div>
             <div class="flex space-x-3">
               <button
-                (click)="toggleExpanded(category.id)"
                 class="p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors"
-                [title]="isExpanded(category.id) ? 'إخفاء الأصناف الفرعية' : 'عرض الأصناف الفرعية'"
+                title="عرض الأصناف الفرعية"
               >
-                <svg class="w-5 h-5 transition-transform" [class.rotate-180]="isExpanded(category.id)" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
                 </svg>
               </button>
@@ -95,7 +94,7 @@
       </div>
 
       <!-- Sub Categories -->
-      <div *ngIf="isExpanded(category.id) && category.subCategories.length > 0" class="bg-gray-50 p-6">
+      <div *ngIf="category.subCategories.length > 0" class="bg-gray-50 p-6">
         <h4 class="text-sm font-medium text-gray-700 mb-4">الأصناف الفرعية</h4>
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           <div *ngFor="let subCategory of category.subCategories" class="bg-white rounded-lg p-4 border border-gray-200">
@@ -117,7 +116,7 @@
       </div>
 
       <!-- No Sub Categories -->
-      <div *ngIf="isExpanded(category.id) && category.subCategories.length === 0" class="bg-gray-50 p-6">
+      <div *ngIf="category.subCategories.length === 0" class="bg-gray-50 p-6">
         <div class="text-center">
           <svg class="mx-auto h-8 w-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-5l-2-2H5a2 2 0 00-2 2z"></path>
@@ -126,6 +125,16 @@
         </div>
       </div>
     </div>
+  </div>
+
+  <!-- Pagination -->
+  <div class="mt-8">
+    <app-pagination
+      [pagination]="pagination"
+      [infoText]="'صنف'"
+      [maxVisiblePages]="5"
+      (pageChange)="onPageChange($event)"
+    ></app-pagination>
   </div>
 
   <!-- Empty State -->

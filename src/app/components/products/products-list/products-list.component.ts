@@ -3,22 +3,25 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { ProductsService } from '../../../services/products.service';
-import { Product } from '../../../interfaces/product.interface';
+import { PaginationComponent, PaginationInfo } from '../../shared/pagination/pagination.component';
 
 @Component({
   selector: 'app-products-list',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, PaginationComponent],
   templateUrl: './products-list.component.html',
   styleUrl: './products-list.component.scss'
 })
 export class ProductsListComponent implements OnInit {
-  products: Product[] = [];
-  filteredProducts: Product[] = [];
+  products: any[] = [];
+  filteredProducts: any[] = [];
   isLoading = true;
   searchTerm = '';
   selectedCategory = '';
   sortBy = 'name';
+  
+  // Pagination properties
+  pagination: PaginationInfo | null = null;
 
   constructor(
     private productsService: ProductsService,
@@ -26,33 +29,53 @@ export class ProductsListComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
+    console.log('🏗️ ProductsListComponent initialized');
+    console.log('🔗 Current route:', this.router.url);
     this.loadProducts();
   }
 
-  loadProducts(): void {
+  loadProducts(page: number = 1): void {
+    console.log('🚀 Starting to load products...');
+    console.log('📄 Loading page:', page);
+    
     this.isLoading = true;
-    this.productsService.getProducts().subscribe({
-      next: (products) => {
-        this.products = products;
-        this.filteredProducts = products;
+    
+    this.productsService.getProducts(page, 10).subscribe({
+      next: (response: any) => {
+        console.log('📦 Products response received:', response);
+        console.log('📊 Number of products:', response.data.length);
+        console.log('📄 Pagination info:', response.pagination);
+        
+        this.products = response.data;
+        this.filteredProducts = response.data;
+        this.pagination = response.pagination;
+        
         this.isLoading = false;
+        
+        console.log('✅ Products loaded successfully');
+        console.log('🔍 Filtered products count:', this.filteredProducts.length);
+        console.log('📄 Current page:', this.pagination?.current, 'of', this.pagination?.pages);
       },
-      error: (error) => {
-        console.error('Error loading products:', error);
+      error: (error: any) => {
+        console.error('❌ Error loading products:', error);
         this.isLoading = false;
       }
     });
   }
 
+  onPageChange(page: number): void {
+    console.log('🔄 Page changed to:', page);
+    this.loadProducts(page);
+  }
+
   filterProducts(): void {
-    this.filteredProducts = this.products.filter(product => {
+    this.filteredProducts = this.products.filter((product: any) => {
       const matchesSearch = !this.searchTerm || 
         product.name.toLowerCase().includes(this.searchTerm.toLowerCase()) ||
-        product.nameAr.toLowerCase().includes(this.searchTerm.toLowerCase()) ||
         product.description.toLowerCase().includes(this.searchTerm.toLowerCase());
       
       const matchesCategory = !this.selectedCategory || 
-        product.category === this.selectedCategory;
+        product.category.name === this.selectedCategory;
 
       return matchesSearch && matchesCategory;
     });
@@ -61,16 +84,16 @@ export class ProductsListComponent implements OnInit {
   }
 
   sortProducts(): void {
-    this.filteredProducts.sort((a, b) => {
+    this.filteredProducts.sort((a: any, b: any) => {
       switch (this.sortBy) {
         case 'name':
           return a.name.localeCompare(b.name);
         case 'price':
           return a.price - b.price;
-        case 'rating':
-          return b.rating - a.rating;
         case 'stock':
           return b.stock - a.stock;
+        case 'createdAt':
+          return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
         default:
           return 0;
       }
@@ -100,12 +123,12 @@ export class ProductsListComponent implements OnInit {
   deleteProduct(productId: string): void {
     if (confirm('هل أنت متأكد من حذف هذا المنتج؟')) {
       this.productsService.deleteProduct(productId).subscribe({
-        next: (success) => {
+        next: (success: any) => {
           if (success) {
-            this.loadProducts();
+            this.loadProducts(this.pagination?.current || 1);
           }
         },
-        error: (error) => {
+        error: (error: any) => {
           console.error('Error deleting product:', error);
         }
       });
@@ -113,35 +136,28 @@ export class ProductsListComponent implements OnInit {
   }
 
   getCategories(): string[] {
-    return [...new Set(this.products.map(p => p.category))];
+    return [...new Set(this.products.map((p: any) => p.category.name))];
   }
 
   getCategoryNameAr(category: string): string {
     const categoryNames: { [key: string]: string } = {
-      'Cleaners': 'منظفات',
-      'Household Tools': 'أدوات منزلية'
+      'Electronics': 'إلكترونيات',
+      'Clothing': 'ملابس',
+      'Books': 'كتب',
+      'Home & Garden': 'المنزل والحديقة',
+      'Sports': 'رياضة',
+      'Cleaners': 'منظفات'
     };
     return categoryNames[category] || category;
   }
 
-  calculateDiscountedPrice(product: Product): number {
-    if (product.isOnSale && product.discountPercentage && product.discountPercentage > 0) {
-      const discount = product.price * (product.discountPercentage / 100);
-      return product.price - discount;
-    }
-    return product.price;
-  }
-
-  getStatusBadge(product: Product): { text: string; class: string } {
-    if (product.isOnSale) {
-      return { text: 'عرض', class: 'bg-red-100 text-red-800' };
-    }
-    if (product.isFeatured) {
+  getStatusBadge(product: any): { text: string; class: string } {
+    if (product.featured) {
       return { text: 'مميز', class: 'bg-blue-100 text-blue-800' };
     }
-    if (product.isBestSeller) {
-      return { text: 'الأكثر مبيعاً', class: 'bg-green-100 text-green-800' };
+    if (product.isActive) {
+      return { text: 'نشط', class: 'bg-green-100 text-green-800' };
     }
-    return { text: 'عادي', class: 'bg-gray-100 text-gray-800' };
+    return { text: 'غير نشط', class: 'bg-gray-100 text-gray-800' };
   }
 }

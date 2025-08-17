@@ -39,8 +39,8 @@
           (change)="onCategoryChange()"
           class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
         >
-                  <option value="">جميع الأصناف</option>
-        <option *ngFor="let category of getCategories()" [value]="category">{{ getCategoryNameAr(category) }}</option>
+          <option value="">جميع الأصناف</option>
+          <option *ngFor="let category of getCategories()" [value]="category">{{ getCategoryNameAr(category) }}</option>
         </select>
       </div>
 
@@ -54,8 +54,8 @@
         >
           <option value="name">الاسم</option>
           <option value="price">السعر</option>
-          <option value="rating">التقييم</option>
           <option value="stock">المخزون</option>
+          <option value="createdAt">تاريخ الإنشاء</option>
         </select>
       </div>
     </div>
@@ -77,66 +77,35 @@
             {{ getStatusBadge(product).text }}
           </span>
         </div>
-        <div *ngIf="product.discount" class="absolute top-2 left-2">
-          <span class="bg-red-500 text-white px-2 py-1 rounded-full text-xs font-medium">
-            {{ product.discount }}% خصم
-          </span>
-        </div>
       </div>
 
       <!-- Product Info -->
       <div class="p-4">
-        <h3 class="text-lg font-semibold text-gray-900 mb-1">{{ product.nameAr }}</h3>
+        <h3 class="text-lg font-semibold text-gray-900 mb-1">{{ product.name }}</h3>
 
-        <p class="text-sm text-gray-500 mb-3 line-clamp-2">{{ product.descriptionAr }}</p>
+        <p class="text-sm text-gray-500 mb-3 line-clamp-2">{{ product.description }}</p>
 
         <!-- Price -->
         <div class="flex items-center mb-3">
           <span class="text-lg font-bold text-gray-900">{{ product.price | currency:'EGP' }}</span>
-          <span *ngIf="product.originalPrice" class="text-sm text-gray-500 line-through mr-2">
-            {{ product.originalPrice | currency:'EGP' }}
-          </span>
         </div>
 
-        <!-- Rating -->
-        <div class="flex items-center mb-3">
-          <div class="flex items-center">
-            <svg class="w-4 h-4 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
-              <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path>
-            </svg>
-            <span class="text-sm text-gray-600 mr-1">{{ product.rating }}</span>
-            <span class="text-sm text-gray-500">({{ product.reviewsCount }})</span>
-          </div>
+        <!-- Stock and Category -->
+        <div class="flex items-center justify-between mb-4">
+          <span class="text-sm text-gray-600">المخزون: {{ product.stock }}</span>
+          <span class="text-sm text-gray-600">{{ product.category.name }}</span>
         </div>
-
-        <!-- Stock -->
-                  <div class="flex items-center justify-between mb-4">
-            <span class="text-sm text-gray-600">المخزون: {{ product.stock }}</span>
-            <span class="text-sm text-gray-600">{{ getCategoryNameAr(product.category) }}</span>
-          </div>
-          
-          <!-- Sale Information -->
-          <div *ngIf="product.isOnSale && product.discountPercentage" class="mb-3">
-            <div class="flex items-center justify-between">
-              <span class="text-sm line-through text-gray-500">{{ product.price | currency:'EGP' }}</span>
-              <span class="text-sm font-bold text-red-600">{{ calculateDiscountedPrice(product) | currency:'EGP' }}</span>
-            </div>
-            <div class="flex items-center justify-between">
-              <span class="text-xs text-red-600 font-medium">خصم {{ product.discountPercentage }}%</span>
-              <span *ngIf="product.saleQuantity" class="text-xs text-gray-500">متوفر للعرض: {{ product.saleQuantity }}</span>
-            </div>
-          </div>
 
         <!-- Actions -->
-        <div class="flex space-x-3">
+        <div class="flex space-x-3 gap-3">
           <button
-            (click)="editProduct(product.id)"
+            (click)="editProduct(product._id)"
             class="flex-1 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium text-center"
           >
             تعديل
           </button>
           <button
-            (click)="deleteProduct(product.id)"
+            (click)="deleteProduct(product._id)"
             class="flex-1 bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition-colors text-sm font-medium text-center"
           >
             حذف
@@ -144,6 +113,16 @@
         </div>
       </div>
     </div>
+  </div>
+
+  <!-- Pagination -->
+  <div class="mt-8">
+    <app-pagination
+      [pagination]="pagination"
+      [infoText]="'منتج'"
+      [maxVisiblePages]="5"
+      (pageChange)="onPageChange($event)"
+    ></app-pagination>
   </div>
 
   <!-- Empty State -->

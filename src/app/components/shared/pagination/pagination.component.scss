@@ -1,0 +1,52 @@
+// Pagination Component Styles
+:host {
+  display: block;
+}
+
+// Responsive adjustments
+@media (max-width: 640px) {
+  .flex-col {
+    gap: 1rem;
+  }
+  
+  .text-center {
+    text-align: center;
+  }
+}
+
+// Button hover effects
+button:not(:disabled):hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+}
+
+// Active page button
+button[class*="bg-blue-600"] {
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+}
+
+// Disabled button styles
+button:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+// Smooth transitions
+button {
+  transition: all 0.2s ease-in-out;
+}
+
+// Focus states for accessibility
+button:focus {
+  outline: 2px solid #3b82f6;
+  outline-offset: 2px;
+}
+
+// Page number buttons
+button[title*="الصفحة"] {
+  min-width: 2.5rem;
+  height: 2.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}

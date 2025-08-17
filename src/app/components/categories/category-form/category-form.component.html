@@ -43,7 +43,7 @@
             class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
           >
             <option value="">اختر الأيقونة</option>
-            <option *ngFor="let icon of icons" [value]="icon.value">{{ icon.label }}</option>
+            <option *ngFor="let icon of getIconOptions()" [value]="icon.value">{{ icon.label }}</option>
           </select>
         </div>
 
@@ -104,7 +104,7 @@
             class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
           >
             <option value="">اختر الصنف الرئيسي</option>
-            <option *ngFor="let mainCategory of mainCategories" [value]="mainCategory.id">
+            <option *ngFor="let mainCategory of parentCategories" [value]="mainCategory.id">
               {{ mainCategory.nameAr }}
             </option>
           </select>

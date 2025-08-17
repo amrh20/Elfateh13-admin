@@ -216,42 +216,8 @@ export class OrdersListComponent implements OnInit {
   }
 
   createTestOrder(): void {
-    const testOrder = {
-      userName: 'عميل تجريبي',
-      userEmail: 'test@example.com',
-      totalAmount: Math.floor(Math.random() * 500) + 100, // مبلغ عشوائي بين 100-600
-      items: [
-        {
-          productId: 'PROD-001',
-          productName: 'منتج تجريبي',
-          productNameAr: 'منتج تجريبي',
-          quantity: 1,
-          price: 150,
-          total: 150
-        }
-      ],
-      shippingAddress: {
-        street: 'شارع تجريبي',
-        city: 'القاهرة',
-        state: 'القاهرة',
-        zipCode: '12345',
-        country: 'مصر'
-      }
-    };
-
-    this.ordersService.createOrder(testOrder).subscribe({
-      next: (newOrder) => {
-        console.log('تم إنشاء طلب تجريبي:', newOrder);
-        alert(`تم إنشاء طلب تجريبي جديد برقم: ${newOrder.id}`);
-        
-        // إضافة الطلب الجديد إلى القائمة
-        this.orders.unshift(newOrder);
-        this.filterOrders();
-      },
-      error: (error) => {
-        console.error('خطأ في إنشاء الطلب التجريبي:', error);
-        alert('حدث خطأ في إنشاء الطلب التجريبي');
-      }
-    });
+    // This method is removed as OrdersService doesn't have createOrder method
+    console.log('createTestOrder method is not implemented');
+    alert('هذه الميزة غير متاحة حالياً');
   }
 }
