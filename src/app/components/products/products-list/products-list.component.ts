@@ -40,7 +40,7 @@ export class ProductsListComponent implements OnInit {
     
     this.isLoading = true;
     
-    this.productsService.getProducts(page, 10).subscribe({
+    this.productsService.getProducts(page, 9).subscribe({
       next: (response: any) => {
         console.log('📦 Products response received:', response);
         console.log('📊 Number of products:', response.data.length);

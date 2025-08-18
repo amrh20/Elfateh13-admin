@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { Observable, of } from 'rxjs';
-import { delay } from 'rxjs/operators';
+import { delay, map, catchError } from 'rxjs/operators';
+import { ApiService } from './api.service';
 
 @Injectable({
   providedIn: 'root'
@@ -59,15 +60,56 @@ export class OrdersService {
     }
   ];
 
-  constructor() { }
+  constructor(private apiService: ApiService) { }
 
   getOrders(): Observable<any[]> {
-    return of(this.mockOrders).pipe(delay(500));
+    console.log('🚀 OrdersService: Calling API /orders');
+    
+    return this.apiService.get<any>('/orders').pipe(
+      map((response: any) => {
+        console.log('📦 Orders API response:', response);
+        
+        if (response && response.data) {
+          console.log('✅ Orders data received:', response.data);
+          return response.data;
+        } else if (response && Array.isArray(response)) {
+          console.log('✅ Orders array received directly:', response);
+          return response;
+        } else {
+          console.log('⚠️ Unexpected response format, using mock data');
+          return this.mockOrders;
+        }
+      }),
+      catchError((error: any) => {
+        console.error('❌ Error fetching orders from API:', error);
+        console.log('🔄 Falling back to mock data');
+        return of(this.mockOrders).pipe(delay(500));
+      })
+    );
   }
 
   getOrder(id: string): Observable<any | undefined> {
-    const order = this.mockOrders.find(o => o.id === id);
-    return of(order).pipe(delay(300));
+    console.log('🔍 OrdersService: Getting order by ID:', id);
+    
+    return this.apiService.get<any>(`/orders/${id}`).pipe(
+      map((response: any) => {
+        console.log('📦 Order API response:', response);
+        
+        if (response && response.data) {
+          return response.data;
+        } else if (response) {
+          return response;
+        } else {
+          console.log('⚠️ Order not found in API, using mock data');
+          return this.mockOrders.find(o => o.id === id);
+        }
+      }),
+      catchError((error: any) => {
+        console.error('❌ Error fetching order from API:', error);
+        console.log('🔄 Falling back to mock data');
+        return of(this.mockOrders.find(o => o.id === id)).pipe(delay(300));
+      })
+    );
   }
 
   updateOrderStatus(orderId: string, status: string): Observable<boolean> {

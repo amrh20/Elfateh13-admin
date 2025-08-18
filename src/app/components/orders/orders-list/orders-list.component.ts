@@ -80,7 +80,25 @@ export class OrdersListComponent implements OnInit {
   ];
 
   ngOnInit(): void {
+    this.loadOrders();
     this.filteredOrders = this.orders;
+  }
+
+  loadOrders(): void {
+    console.log('🚀 Loading orders from service...');
+    
+    this.ordersService.getOrders().subscribe({
+      next: (orders: any[]) => {
+        this.orders = orders;
+        // this.filteredOrders = orders;
+        console.log('✅ Orders loaded successfully, count:', orders.length);
+      },
+      error: (error: any) => {
+        console.error('❌ Error loading orders:', error);
+        // Keep using mock data if API fails
+        this.filteredOrders = this.orders;
+      }
+    });
   }
 
   onSearchChange(): void {
