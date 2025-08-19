@@ -18,7 +18,7 @@ export class CategoriesService {
     const token = localStorage.getItem('authToken');
     
     if (!token) {
-      console.warn('No auth token found, trying public endpoint');
+
       return this.getCategoriesFromPublic();
     }
 
@@ -28,14 +28,12 @@ export class CategoriesService {
 
     return this.apiService.get<any>('/categories/admin', {}, headers).pipe(
       map((response: any) => {
-        console.log('API Response for /categories/admin:', response);
+
         if (response.success && response.data) {
           // Map API response to Category interface
           const mappedCategories = response.data.map((apiCategory: any) => this.mapApiResponseToCategory(apiCategory));
-          console.log('Mapped categories:', mappedCategories);
           return mappedCategories;
         } else {
-          console.warn('Admin endpoint returned unsuccessful response, trying public endpoint');
           return this.getCategoriesFromPublic();
         }
       }),
@@ -43,13 +41,11 @@ export class CategoriesService {
         if (Array.isArray(result)) {
           return of(result);
         } else {
-          console.log('Trying public endpoint as fallback');
           return this.getCategoriesFromPublic();
         }
       }),
       catchError((error: any) => {
-        console.error('Error calling /categories/admin API:', error);
-        console.log('Trying public endpoint as fallback');
+
         return this.getCategoriesFromPublic();
       })
     );
@@ -57,15 +53,15 @@ export class CategoriesService {
 
   // Get public categories for comparison
   getPublicCategories(): Observable<any> {
-    console.log('Getting public categories for comparison');
+
     
     return this.apiService.get<any>('/categories').pipe(
       map((response: any) => {
-        console.log('Public categories response:', response);
+
         return response;
       }),
       catchError((error: any) => {
-        console.error('Error getting public categories:', error);
+
         return of({ error: error.message || 'Unknown error' });
       })
     );
@@ -73,23 +69,22 @@ export class CategoriesService {
 
   // Get categories from public endpoint as fallback
   getCategoriesFromPublic(): Observable<any[]> {
-    console.log('Getting categories from public endpoint as fallback');
+
     
     return this.apiService.get<any>('/categories').pipe(
       map((response: any) => {
-        console.log('Public categories fallback response:', response);
+
         if (response.success && response.data) {
           const mappedCategories = response.data.map((apiCategory: any) => this.mapApiResponseToCategory(apiCategory));
-          console.log('Mapped categories from public endpoint:', mappedCategories);
+
           return mappedCategories;
         } else {
-          console.warn('Public endpoint returned unsuccessful response:', response);
+
           return [];
         }
       }),
       catchError((error: any) => {
-        console.error('Error getting categories from public endpoint:', error);
-        console.log('No categories available');
+
         return of([]);
       })
     );
@@ -119,7 +114,7 @@ export class CategoriesService {
     const token = localStorage.getItem('authToken');
     
     if (!token) {
-      console.warn('No auth token found, cannot get single category');
+
       return of(undefined);
     }
 
@@ -135,7 +130,7 @@ export class CategoriesService {
         return undefined;
       }),
       catchError((error: any) => {
-        console.error('Error getting category:', error);
+
         return of(undefined);
       })
     );
@@ -172,22 +167,22 @@ export class CategoriesService {
       requestBody.parent = categoryData.parentId;
     }
 
-    console.log('Creating category with API call:', requestBody);
+
 
     return this.apiService.post<any>('/categories', requestBody, headers).pipe(
       map((response: any) => {
-        console.log('API Response for creating category:', response);
+
         if (response.success && response.data) {
           // Map API response back to our format
           const newCategory = this.mapApiResponseToCategory(response.data);
           return newCategory;
         } else {
-          console.warn('API returned unsuccessful response:', response);
+
           throw new Error(response.message || 'Failed to create category');
         }
       }),
       catchError((error: any) => {
-        console.error('Error creating category via API:', error);
+
         throw error;
       })
     );
@@ -222,11 +217,11 @@ export class CategoriesService {
       requestBody.parent = categoryData['parentId'];
     }
 
-    console.log('Updating category with API call:', requestBody);
+
 
     return this.apiService.put<any>(`/categories/${id}`, requestBody, headers).pipe(
       map((response: any) => {
-        console.log('API Response for updating category:', response);
+
         if (response.success && response.data) {
           return this.mapApiResponseToCategory(response.data);
         } else {
@@ -234,7 +229,7 @@ export class CategoriesService {
         }
       }),
       catchError((error: any) => {
-        console.error('Error updating category via API:', error);
+
         throw error;
       })
     );
@@ -252,11 +247,11 @@ export class CategoriesService {
       'Authorization': `Bearer ${token}`
     };
 
-    console.log('Deleting category with API call:', id);
+
 
     return this.apiService.delete<any>(`/categories/${id}`, headers).pipe(
       map((response: any) => {
-        console.log('API Response for deleting category:', response);
+
         if (response.success) {
           return true;
         } else {
@@ -264,7 +259,7 @@ export class CategoriesService {
         }
       }),
       catchError((error: any) => {
-        console.error('Error deleting category via API:', error);
+
         throw error;
       })
     );

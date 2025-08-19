@@ -25,33 +25,56 @@ export class CategoryFormComponent implements OnInit {
   isLoading = false;
   parentCategories: any[] = [];
   errorMessage = '';
+  
+  // Mode flags for showing/hiding category type options
+  isMainCategoryMode = false;
+  isSubcategoryMode = false;
 
   constructor(
     private categoriesService: CategoriesService,
     private route: ActivatedRoute,
     private router: Router
-  ) {}
+  ) { }
 
   ngOnInit(): void {
     const categoryId = this.route.snapshot.paramMap.get('id');
     const parentId = this.route.snapshot.queryParamMap.get('parentId');
+    const type = this.route.snapshot.queryParamMap.get('type');
+    
+    // Set mode flags based on query parameters
+    if (type === 'main') {
+      this.isMainCategoryMode = true;
+      this.isSubcategoryMode = false;
+      this.category.type = 'main';
+    } else if (type === 'sub') {
+      this.isMainCategoryMode = false;
+      this.isSubcategoryMode = true;
+      this.category.type = 'sub';
+    }
     
     // Clear any default values immediately
     this.category.image = '';
     this.category.icon = '';
     
+    // Check if parentId is provided in query params (for subcategories)
+    if (parentId) {
+      this.category.type = 'sub';
+      // Ensure parentId is a string
+      this.category.parentId = parentId.toString();
+      this.isMainCategoryMode = false;
+      this.isSubcategoryMode = true;
+      
+      // Load parent categories immediately for subcategories
+      this.loadParentCategories();
+    } else {
+      // Load parent categories normally
+      this.loadParentCategories();
+    }
+    
     if (categoryId) {
       this.isEditMode = true;
       this.loadCategory(categoryId);
     }
-    
-    // Check if parentId is provided in query params (for subcategories)
-    if (parentId) {
-      this.category.type = 'sub';
-      this.category.parentId = parentId;
-    }
-    
-    this.loadParentCategories();
   }
 
 
@@ -61,17 +84,38 @@ export class CategoryFormComponent implements OnInit {
     this.categoriesService.getCategory(id).subscribe({
       next: (category: any) => {
         if (category) {
-          console.log('🔍 Raw category data from API:', category);
+
+          
           this.category = { ...category };
-          console.log('🔍 Category after spread:', this.category);
+
           
           // Check if this is a subcategory and set type accordingly
-          if (category.parentId) {
+          if (category.parentId || category.parent) {
             this.category.type = 'sub';
-            console.log('✅ Loaded subcategory with parentId:', category.parentId);
+            this.isMainCategoryMode = false;
+            this.isSubcategoryMode = true;
+            
+            // Set parentId from either parentId or parent field
+            if (category.parentId) {
+              // Ensure parentId is a string, not an object
+              this.category.parentId = typeof category.parentId === 'object' ? category.parentId.id : category.parentId;
+            } else if (category.parent && typeof category.parent === 'string') {
+              this.category.parentId = category.parent;
+            } else if (category.parent && typeof category.parent === 'object' && category.parent.id) {
+              this.category.parentId = category.parent.id;
+            }
+            
+            // Force change detection for parentId binding
+            setTimeout(() => {
+              this.category = { ...this.category };
+            }, 100);
+
           } else {
             this.category.type = 'main';
-            console.log('✅ Loaded main category with ID:', id);
+            this.isMainCategoryMode = true;
+            this.isSubcategoryMode = false;
+            this.category.parentId = '';
+
           }
           
           // Set the category ID for editing
@@ -87,12 +131,11 @@ export class CategoryFormComponent implements OnInit {
             delete this.category.icon;
           }
           
-          console.log('🔍 Final category object:', this.category);
+
         }
         this.isLoading = false;
       },
       error: (error: any) => {
-        console.error('Error loading category:', error);
         this.errorMessage = 'خطأ في تحميل بيانات الصنف';
         this.isLoading = false;
       }
@@ -103,9 +146,28 @@ export class CategoryFormComponent implements OnInit {
     this.categoriesService.getMainCategories().subscribe({
       next: (categories: any) => {
         this.parentCategories = categories;
+        
+        // If we're in subcategory mode and have a parentId, ensure it's set correctly
+        if (this.isSubcategoryMode && this.category.parentId && categories.length > 0) {
+          // Ensure parentId is a string for comparison
+          const currentParentId = this.category.parentId.toString();
+          // Verify that the parentId exists in the loaded categories
+          const parentExists = categories.some((cat: any) => cat.id.toString() === currentParentId);
+          if (!parentExists) {
+            // If parent doesn't exist, clear the parentId
+            this.category.parentId = '';
+          }
+        }
+        
+        // Force change detection for parentId binding
+        setTimeout(() => {
+          if (this.isSubcategoryMode && this.category.parentId) {
+            // Trigger change detection manually
+            this.category = { ...this.category };
+          }
+        }, 100);
       },
       error: (error: any) => {
-        console.error('Error loading parent categories:', error);
         this.errorMessage = 'خطأ في تحميل الأصناف الرئيسية';
       }
     });
@@ -116,14 +178,14 @@ export class CategoryFormComponent implements OnInit {
     if (!this.category.nameAr) {
       return false;
     }
-    
+
     // If it's a sub category, parent must be selected
     if (this.category.type === 'sub' && !this.category.parentId) {
       return false;
     }
-    
- 
-    
+
+
+
     return true;
   }
 
@@ -134,10 +196,10 @@ export class CategoryFormComponent implements OnInit {
     }
 
     this.errorMessage = '';
-    
+
     // Clean the data before sending
     this.cleanCategoryData();
-    
+
     if (this.isEditMode) {
       this.updateCategory();
     } else {
@@ -150,23 +212,23 @@ export class CategoryFormComponent implements OnInit {
     if (!this.category.image || this.category.image.trim() === '') {
       delete this.category.image;
     }
-    
+
     // Remove icon field completely
     delete this.category.icon;
-    
-    console.log('🧹 Cleaned category data:', this.category);
+
+
   }
 
   createCategory(): void {
     this.isLoading = true;
     this.errorMessage = '';
-    
+
     // Remove ID if it exists (for new categories)
     const categoryData = { ...this.category };
     delete categoryData.id;
-    
-    console.log('🆕 Creating category with data:', categoryData);
-    
+
+
+
     this.categoriesService.createCategory(categoryData).subscribe({
       next: (category: any) => {
         this.isLoading = false;
@@ -182,26 +244,24 @@ export class CategoryFormComponent implements OnInit {
   updateCategory(): void {
     this.isLoading = true;
     this.errorMessage = '';
-    
+
     const categoryId = this.category.id || this.route.snapshot.paramMap.get('id');
     if (categoryId) {
-      console.log('🔄 Updating category with ID:', categoryId);
-      console.log('🔄 Category data:', this.category);
-      
+
+
       this.categoriesService.updateCategory(categoryId, this.category).subscribe({
         next: (category: any) => {
-          console.log('✅ Category updated successfully:', category);
+
           this.isLoading = false;
           this.router.navigate(['/categories']);
         },
         error: (error: any) => {
-          console.error('❌ Error updating category:', error);
           this.errorMessage = error.message || 'خطأ في تحديث الصنف';
           this.isLoading = false;
         }
       });
     } else {
-      console.error('❌ No category ID found for update');
+
       this.errorMessage = 'خطأ: لم يتم العثور على معرف الصنف';
       this.isLoading = false;
     }
@@ -211,12 +271,12 @@ export class CategoryFormComponent implements OnInit {
     if (this.category.type === 'main') {
       this.category.parentId = '';
     }
-    
+
     // Clear image field when type changes
     this.category.image = '';
-    
-    // Update image preview when type changes
-    console.log('Category type changed to:', this.category.type);
+
+    // Force change detection
+    this.category = { ...this.category };
   }
 
 
@@ -226,12 +286,12 @@ export class CategoryFormComponent implements OnInit {
     if (this.category.image && this.category.image.trim() !== '') {
       return this.category.image;
     }
-    
+
     // Return default image based on category type
     if (this.category.type === 'sub') {
       return '/assets/images/default-subcategory.svg';
     }
-    
+
     return '/assets/images/default-category.svg';
   }
 

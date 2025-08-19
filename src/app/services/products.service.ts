@@ -251,4 +251,26 @@ export class ProductsService {
     // Since isOnSale no longer exists, return empty array or implement new logic
     return of([]).pipe(delay(300));
   }
+
+  getProductsBySubcategory(subcategoryId: string, page: number = 1, limit: number = 12): Observable<any> {
+    return this.apiService.get<any>(`products?page=${page}&limit=${limit}&subcategory=${subcategoryId}`).pipe(
+      catchError((error) => {
+        console.log('❌ Error fetching products by subcategory from API, falling back to mock data');
+        
+        // Filter mock products by subcategory (for demo purposes)
+        const filteredProducts = this.mockProducts.filter((p: any) => 
+          p.category && p.category._id === subcategoryId
+        );
+        
+        // Create mock response with pagination
+        const mockResponse: any = {
+          success: true,
+          data: filteredProducts,
+          total: filteredProducts.length
+        };
+        
+        return of(mockResponse).pipe(delay(500));
+      })
+    );
+  }
 }

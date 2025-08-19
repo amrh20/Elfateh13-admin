@@ -211,7 +211,10 @@ export class CategoriesListComponent implements OnInit {
   }
 
   editCategory(categoryId: string): void {
-    this.router.navigate(['/categories/edit', categoryId]);
+    // Add query param to indicate this is a main category edit
+    this.router.navigate(['/categories/edit', categoryId], {
+      queryParams: { type: 'main' }
+    });
   }
 
   deleteCategory(categoryId: string): void {
@@ -232,13 +235,26 @@ export class CategoriesListComponent implements OnInit {
   // Subcategory actions
   addSubcategory(parentCategoryId: string): void {
     console.log('🔍 Adding subcategory with parentId:', parentCategoryId);
-    this.router.navigate(['/categories/new'], { 
-      queryParams: { parentId: parentCategoryId } 
+    this.router.navigate(['/categories/add'], { 
+      queryParams: { 
+        parentId: parentCategoryId,
+        type: 'sub'
+      } 
     });
   }
 
   editSubcategory(subcategoryId: string): void {
-    this.router.navigate(['/categories/edit', subcategoryId]);
+    // Add query param to indicate this is a subcategory edit
+    this.router.navigate(['/categories/edit', subcategoryId], {
+      queryParams: { type: 'sub' }
+    });
+  }
+
+  viewSubcategoryProducts(subcategoryId: string): void {
+    // Navigate to products page filtered by subcategory
+    this.router.navigate(['/products'], {
+      queryParams: { subcategory: subcategoryId }
+    });
   }
 
   deleteSubcategory(categoryId: string, subcategoryId: string): void {

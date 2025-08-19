@@ -8,27 +8,24 @@ const authGuard = () => {
   const authService = inject(AuthService);
   const router = inject(Router);
   
-  console.log('Auth guard checking authentication...');
+
   
   try {
     const isAuth = authService.isAuthenticated();
     const currentUser = authService.getCurrentUser();
     
-    console.log('Auth guard result:', {
-      isAuthenticated: isAuth,
-      currentUser: currentUser ? 'exists' : 'null'
-    });
+
     
     if (isAuth && currentUser) {
-      console.log('Auth guard: User is authenticated, allowing access');
+
       return true;
     } else {
-      console.log('Auth guard: User is not authenticated, redirecting to login');
+
       router.navigate(['/login']);
       return false;
     }
   } catch (error) {
-    console.error('Auth guard error:', error);
+
     router.navigate(['/login']);
     return false;
   }

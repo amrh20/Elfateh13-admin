@@ -18,14 +18,12 @@ export class ProductFormComponent {
     discount: 0,
     category: '',
     subCategory: '',
-    isFeatured: false,
-    isBestSeller: false,
-    isOnSale: false,
+    productType: '', // 'featured', 'bestSeller', 'onSale'
     discountPercentage: 0,
     saleEndDate: '',
     saleQuantity: 0,
     featuredOrder: 1,
-    featuredEndDate: ''
+    bestSellerOrder: 1
   };
 
   selectedImages: File[] = [];
@@ -98,6 +96,23 @@ export class ProductFormComponent {
     this.imagePreviewUrls.splice(index, 1);
   }
 
+  onProductTypeChange(): void {
+    // Reset related fields when product type changes
+    if (this.product.productType !== 'onSale') {
+      this.product.discountPercentage = 0;
+      this.product.saleEndDate = '';
+      this.product.saleQuantity = 0;
+    }
+    
+    if (this.product.productType !== 'featured') {
+      this.product.featuredOrder = 1;
+    }
+    
+    if (this.product.productType !== 'bestSeller') {
+      this.product.bestSellerOrder = 1;
+    }
+  }
+
   validateForm(): boolean {
     this.errors = [];
 
@@ -117,16 +132,20 @@ export class ProductFormComponent {
       this.errors.push('الصنف مطلوب');
     }
 
-    if (this.product.isOnSale && this.product.discountPercentage <= 0) {
+    if (this.product.productType === 'onSale' && this.product.discountPercentage <= 0) {
       this.errors.push('نسبة الخصم مطلوبة للمنتجات في العرض');
     }
 
-    if (this.product.isOnSale && !this.product.saleEndDate) {
+    if (this.product.productType === 'onSale' && !this.product.saleEndDate) {
       this.errors.push('تاريخ انتهاء العرض مطلوب');
     }
 
-    if (this.product.isFeatured && !this.product.featuredEndDate) {
-      this.errors.push('تاريخ انتهاء التميز مطلوب');
+    if (this.product.productType === 'featured' && this.product.featuredOrder <= 0) {
+      this.errors.push('ترتيب العرض مطلوب للمنتجات المميزة');
+    }
+
+    if (this.product.productType === 'bestSeller' && this.product.bestSellerOrder <= 0) {
+      this.errors.push('ترتيب العرض مطلوب للمنتجات الأكثر مبيعاً');
     }
 
     if (this.selectedImages.length === 0) {
@@ -168,7 +187,7 @@ export class ProductFormComponent {
   }
 
   calculateDiscountedPrice(): number {
-    if (this.product.isOnSale && this.product.discountPercentage > 0) {
+    if (this.product.productType === 'onSale' && this.product.discountPercentage > 0) {
       const discount = this.product.price * (this.product.discountPercentage / 100);
       return this.product.price - discount;
     }
