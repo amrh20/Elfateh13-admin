@@ -10,7 +10,7 @@
     <button
       (click)="onFirstPage()"
       [disabled]="!canGoToFirst()"
-      class="px-3 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+      class="px-3 py-2 text-sm font-medium pagination-nav pagination-button rounded-lg disabled:opacity-50 disabled:cursor-not-allowed"
       title="الصفحة الأولى"
     >
       <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -22,7 +22,7 @@
     <button
       (click)="onPreviousPage()"
       [disabled]="!canGoToPrevious()"
-      class="px-3 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+      class="px-3 py-2 text-sm font-medium pagination-nav pagination-button rounded-lg disabled:opacity-50 disabled:cursor-not-allowed"
       title="الصفحة السابقة"
     >
       <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -36,8 +36,8 @@
         *ngFor="let page of pageNumbers"
         (click)="onPageChange(page)"
         [class]="page === currentPage 
-          ? 'px-3 py-2 text-sm font-medium text-white bg-blue-600 border border-blue-600 rounded-lg' 
-          : 'px-3 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors'"
+          ? 'pagination-active pagination-button' 
+          : 'pagination-inactive pagination-button'"
         [title]="'الصفحة ' + page"
       >
         {{ page }}
@@ -48,7 +48,7 @@
     <button
       (click)="onNextPage()"
       [disabled]="!canGoToNext()"
-      class="px-3 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+      class="px-3 py-2 text-sm font-medium pagination-nav pagination-button rounded-lg disabled:opacity-50 disabled:cursor-not-allowed"
       title="الصفحة التالية"
     >
       <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -60,7 +60,7 @@
     <button
       (click)="onLastPage()"
       [disabled]="!canGoToLast()"
-      class="px-3 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+      class="px-3 py-2 text-sm font-medium pagination-nav pagination-button rounded-lg disabled:opacity-50 disabled:cursor-not-allowed"
       title="الصفحة الأخيرة"
     >
       <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">

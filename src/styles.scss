@@ -12,15 +12,23 @@
 @tailwind components;
 @tailwind utilities;
 
+/* CSS Variables for colors */
+:root {
+  --blue-600: #2563eb;
+  --blue-700: #1d4ed8;
+  --white: #ffffff;
+}
+
 /* Custom styles for RTL support */
 html {
   direction: rtl;
 }
 
 body {
-  font-family: 'Cairo', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  font-family: 'Cairo', 'Segoe UI', 'Tahoma', 'Geneva', 'Verdana', 'Arial', 'Helvetica', sans-serif !important;
   margin: 0;
   padding: 0;
+  font-display: swap;
 }
 
 /* Fix for Arabic text */
@@ -44,4 +52,35 @@ body {
 
 ::-webkit-scrollbar-thumb:hover {
   background: #a8a8a8;
+}
+
+/* Force button styles to work */
+.btn-primary {
+  background-color: var(--blue-600) !important;
+  color: var(--white) !important;
+}
+
+.btn-primary:hover {
+  background-color: var(--blue-700) !important;
+}
+
+/* Ensure blue-600 works */
+.bg-blue-600 {
+  background-color: var(--blue-600) !important;
+}
+
+.hover\:bg-blue-700:hover {
+  background-color: var(--blue-700) !important;
+}
+
+.gap-3 {
+  gap: 1rem !important;
+}
+.bg-blue-600 {
+  background: #2563eb !important;
+  height: 48px;
+}
+.bg-blue-700 {
+  background: #1d4ed8 !important;
+  height: 48px;
 }

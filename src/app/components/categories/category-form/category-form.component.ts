@@ -13,11 +13,9 @@ import { CategoriesService } from '../../../services/categories.service';
 })
 export class CategoryFormComponent implements OnInit {
   category: any = {
-    name: '',
     nameAr: '',
-    description: '',
     descriptionAr: '',
-    icon: 'folder',
+    image: '',
     type: 'main',
     parentId: '',
     isActive: true
@@ -26,6 +24,7 @@ export class CategoryFormComponent implements OnInit {
   isEditMode = false;
   isLoading = false;
   parentCategories: any[] = [];
+  errorMessage = '';
 
   constructor(
     private categoriesService: CategoriesService,
@@ -35,22 +34,67 @@ export class CategoryFormComponent implements OnInit {
 
   ngOnInit(): void {
     const categoryId = this.route.snapshot.paramMap.get('id');
+    const parentId = this.route.snapshot.queryParamMap.get('parentId');
+    
+    // Clear any default values immediately
+    this.category.image = '';
+    this.category.icon = '';
+    
     if (categoryId) {
       this.isEditMode = true;
       this.loadCategory(categoryId);
     }
+    
+    // Check if parentId is provided in query params (for subcategories)
+    if (parentId) {
+      this.category.type = 'sub';
+      this.category.parentId = parentId;
+    }
+    
     this.loadParentCategories();
   }
 
+
+
   loadCategory(id: string): void {
+    this.isLoading = true;
     this.categoriesService.getCategory(id).subscribe({
       next: (category: any) => {
         if (category) {
+          console.log('🔍 Raw category data from API:', category);
           this.category = { ...category };
+          console.log('🔍 Category after spread:', this.category);
+          
+          // Check if this is a subcategory and set type accordingly
+          if (category.parentId) {
+            this.category.type = 'sub';
+            console.log('✅ Loaded subcategory with parentId:', category.parentId);
+          } else {
+            this.category.type = 'main';
+            console.log('✅ Loaded main category with ID:', id);
+          }
+          
+          // Set the category ID for editing
+          this.category.id = id;
+          
+          // Clear any unwanted default values
+          if (!this.category.image || this.category.image === 'folder') {
+            this.category.image = '';
+          }
+          
+          // Remove icon field completely if it exists
+          if (this.category.icon) {
+            delete this.category.icon;
+          }
+          
+          console.log('🔍 Final category object:', this.category);
         }
+        this.isLoading = false;
       },
       error: (error: any) => {
         console.error('Error loading category:', error);
+        this.errorMessage = 'خطأ في تحميل بيانات الصنف';
+        this.isLoading = false;
       }
     });
   }
@@ -62,11 +106,38 @@ export class CategoryFormComponent implements OnInit {
       },
       error: (error: any) => {
         console.error('Error loading parent categories:', error);
+        this.errorMessage = 'خطأ في تحميل الأصناف الرئيسية';
       }
     });
   }
 
+  isFormValid(): boolean {
+    // Basic validation - only Arabic fields are required
+    if (!this.category.nameAr) {
+      return false;
+    }
+    
+    // If it's a sub category, parent must be selected
+    if (this.category.type === 'sub' && !this.category.parentId) {
+      return false;
+    }
+    
+ 
+    
+    return true;
+  }
+
   onSubmit(): void {
+    if (!this.isFormValid()) {
+      this.errorMessage = 'يرجى ملء جميع الحقول المطلوبة';
+      return;
+    }
+
+    this.errorMessage = '';
+    
+    // Clean the data before sending
+    this.cleanCategoryData();
+    
     if (this.isEditMode) {
       this.updateCategory();
     } else {
@@ -74,15 +145,35 @@ export class CategoryFormComponent implements OnInit {
     }
   }
 
+  cleanCategoryData(): void {
+    // Remove empty or default values
+    if (!this.category.image || this.category.image.trim() === '') {
+      delete this.category.image;
+    }
+    
+    // Remove icon field completely
+    delete this.category.icon;
+    
+    console.log('🧹 Cleaned category data:', this.category);
+  }
+
   createCategory(): void {
     this.isLoading = true;
-    this.categoriesService.createCategory(this.category).subscribe({
+    this.errorMessage = '';
+    
+    // Remove ID if it exists (for new categories)
+    const categoryData = { ...this.category };
+    delete categoryData.id;
+    
+    console.log('🆕 Creating category with data:', categoryData);
+    
+    this.categoriesService.createCategory(categoryData).subscribe({
       next: (category: any) => {
-        console.log('Category form submitted:', this.category);
+        this.isLoading = false;
         this.router.navigate(['/categories']);
       },
       error: (error: any) => {
-        console.error('Error creating category:', error);
+        this.errorMessage = error.message || 'خطأ في إنشاء الصنف';
         this.isLoading = false;
       }
     });
@@ -90,17 +181,29 @@ export class CategoryFormComponent implements OnInit {
 
   updateCategory(): void {
     this.isLoading = true;
-    const categoryId = this.route.snapshot.paramMap.get('id');
+    this.errorMessage = '';
+    
+    const categoryId = this.category.id || this.route.snapshot.paramMap.get('id');
     if (categoryId) {
+      console.log('🔄 Updating category with ID:', categoryId);
+      console.log('🔄 Category data:', this.category);
+      
       this.categoriesService.updateCategory(categoryId, this.category).subscribe({
         next: (category: any) => {
+          console.log('✅ Category updated successfully:', category);
+          this.isLoading = false;
           this.router.navigate(['/categories']);
         },
         error: (error: any) => {
-          console.error('Error updating category:', error);
+          console.error('❌ Error updating category:', error);
+          this.errorMessage = error.message || 'خطأ في تحديث الصنف';
           this.isLoading = false;
         }
       });
+    } else {
+      console.error('❌ No category ID found for update');
+      this.errorMessage = 'خطأ: لم يتم العثور على معرف الصنف';
+      this.isLoading = false;
     }
   }
 
@@ -108,17 +211,35 @@ export class CategoryFormComponent implements OnInit {
     if (this.category.type === 'main') {
       this.category.parentId = '';
     }
+    
+    // Clear image field when type changes
+    this.category.image = '';
+    
+    // Update image preview when type changes
+    console.log('Category type changed to:', this.category.type);
   }
 
-  getIconOptions(): { value: string; label: string; icon: string }[] {
-    return [
-      { value: 'folder', label: 'مجلد', icon: '📁' },
-      { value: 'bottle', label: 'زجاجة', icon: '🧴' },
-      { value: 'tools', label: 'أدوات', icon: '🔧' },
-      { value: 'brush', label: 'فرشاة', icon: '🖌️' },
-      { value: 'star', label: 'نجمة', icon: '⭐' },
-      { value: 'heart', label: 'قلب', icon: '❤️' }
-    ];
+
+
+  getImagePreview(): string {
+    // Return the image URL if available
+    if (this.category.image && this.category.image.trim() !== '') {
+      return this.category.image;
+    }
+    
+    // Return default image based on category type
+    if (this.category.type === 'sub') {
+      return '/assets/images/default-subcategory.svg';
+    }
+    
+    return '/assets/images/default-category.svg';
+  }
+
+  onImageError(event: any): void {
+    const target = event.target as HTMLImageElement;
+    if (target) {
+      target.style.display = 'none';
+    }
   }
 
   cancel(): void {
