@@ -54,7 +54,7 @@ export class OrderDetailsComponent implements OnInit {
           price: 45.99,
           quantity: 2,
           total: 91.98,
-          image: 'https://via.placeholder.com/80x80'
+          image: '/assets/images/default-product.svg'
         },
         {
           id: '2',
@@ -63,7 +63,7 @@ export class OrderDetailsComponent implements OnInit {
           price: 24.00,
           quantity: 1,
           total: 24.00,
-          image: 'https://via.placeholder.com/80x80'
+          image: '/assets/images/default-product.svg'
         },
         {
           id: '3',
@@ -72,7 +72,7 @@ export class OrderDetailsComponent implements OnInit {
           price: 24.00,
           quantity: 1,
           total: 24.00,
-          image: 'https://via.placeholder.com/80x80'
+          image: '/assets/images/default-product.svg'
         }
       ],
       notes: 'يرجى التوصيل في الصباح',
@@ -112,7 +112,7 @@ export class OrderDetailsComponent implements OnInit {
           price: 39.75,
           quantity: 2,
           total: 79.50,
-          image: 'https://via.placeholder.com/80x80'
+          image: '/assets/images/default-product.svg'
         }
       ],
       notes: '',
@@ -167,7 +167,7 @@ export class OrderDetailsComponent implements OnInit {
           price: 60.00,
           quantity: 3,
           total: 180.00,
-          image: 'https://via.placeholder.com/80x80'
+          image: '/assets/images/default-product.svg'
         },
         {
           id: '6',
@@ -176,7 +176,7 @@ export class OrderDetailsComponent implements OnInit {
           price: 55.75,
           quantity: 1,
           total: 55.75,
-          image: 'https://via.placeholder.com/80x80'
+          image: '/assets/images/default-product.svg'
         }
       ],
       notes: 'يرجى التوصيل في المساء',

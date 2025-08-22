@@ -1,7 +1,9 @@
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { ProductsService } from '../../../services/products.service';
+import { ApiService } from '../../../services/api.service';
 import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { PaginationComponent, PaginationInfo } from '../../shared/pagination/pagination.component';
 
 @Component({
@@ -9,7 +11,7 @@ import { PaginationComponent, PaginationInfo } from '../../shared/pagination/pag
   templateUrl: './products-list.component.html',
   styleUrls: ['./products-list.component.scss'],
   standalone: true,
-  imports:[CommonModule, PaginationComponent]
+  imports:[CommonModule, FormsModule, PaginationComponent]
 })
 export class ProductsListComponent implements OnInit {
   products: any[] = [];
@@ -22,16 +24,30 @@ export class ProductsListComponent implements OnInit {
   currentSubcategory: string | null = null;
   subcategoryName: string = '';
   
+  // Categories and subcategories
+  Categories: any[] = [];
+  subCategories: any[] = [];
+  
+  // Filters object
+  filters = {
+    subcategory: '',
+    productType: ''
+  };
+  
   // Helper for pagination
   Array = Array;
 
   constructor(
     private productsService: ProductsService,
+    private apiService: ApiService,
     private route: ActivatedRoute,
     public router: Router
   ) {}
 
   ngOnInit(): void {
+    // Load categories and subcategories
+    this.loadCategories();
+    
     // Get subcategory from query params
     this.route.queryParamMap.subscribe(params => {
       this.currentSubcategory = params.get('subcategory');
@@ -52,10 +68,14 @@ export class ProductsListComponent implements OnInit {
     this.isLoading = true;
     this.error = null;
 
+    const params = this.buildQueryParams();
+    params.subcategory = this.currentSubcategory; // Override with current subcategory
+
     this.productsService.getProductsBySubcategory(
       this.currentSubcategory, 
       this.currentPage, 
-      this.pageSize
+      this.pageSize,
+      params
     ).subscribe({
       next: (response: any) => {
         this.products = response.data || [];
@@ -74,7 +94,9 @@ export class ProductsListComponent implements OnInit {
     this.isLoading = true;
     this.error = null;
 
-    this.productsService.getProducts(this.currentPage, this.pageSize).subscribe({
+    const params = this.buildQueryParams();
+
+    this.productsService.getProducts(this.currentPage, this.pageSize, params).subscribe({
       next: (response: any) => {
         this.products = response.data || [];
         this.totalProducts = response.pagination?.total || response.total || 0;
@@ -94,6 +116,100 @@ export class ProductsListComponent implements OnInit {
     // You can add a service call here to get subcategory details
     // For now, we'll use a placeholder
     this.subcategoryName = 'التصنيف الفرعي';
+  }
+
+  loadCategories(): void {
+    // Load categories from API
+    this.apiService.get<any>('/categories').subscribe({
+      next: (response: any) => {
+        if (response && response.data) {
+          this.Categories = response.data;
+          // Extract all subcategories into one array
+          this.subCategories = this.extractAllSubcategories(response.data);
+          console.log('All subcategories:', this.subCategories);
+        }
+      },
+      error: (error: any) => {
+        console.error('Error fetching categories:', error);
+        // Use mock data if API fails
+        this.Categories = this.getMockCategories();
+        this.subCategories = this.extractAllSubcategories(this.Categories);
+      }
+    });
+  }
+
+  private extractAllSubcategories(categories: any[]): any[] {
+    const allSubcategories: any[] = [];
+    
+    categories.forEach(category => {
+      if (category.subcategories && Array.isArray(category.subcategories)) {
+        category.subcategories.forEach((subcategory: any) => {
+          allSubcategories.push({
+            id: subcategory._id || subcategory.id,
+            name: subcategory.nameAr || subcategory.name
+          });
+        });
+      }
+    });
+    
+    return allSubcategories;
+  }
+
+  private getMockCategories(): any[] {
+    return [
+      {
+        _id: '1',
+        name: 'التنظيف',
+        subcategories: [
+          { _id: '1-1', name: 'منظفات الغسيل' },
+          { _id: '1-2', name: 'منظفات المطبخ' }
+        ]
+      },
+      {
+        _id: '2',
+        name: 'الإلكترونيات',
+        subcategories: [
+          { _id: '2-1', name: 'الهواتف' },
+          { _id: '2-2', name: 'الحواسيب' }
+        ]
+      }
+    ];
+  }
+
+  // Product Actions
+  viewProductDetails(product: any): void {
+    this.router.navigate(['/products', product._id || product.id]);
+  }
+
+  editProduct(product: any): void {
+    this.router.navigate(['/products/edit', product._id || product.id], {
+      state: { product: product }
+    });
+  }
+
+  deleteProduct(product: any): void {
+    if (confirm(`هل أنت متأكد من حذف المنتج "${product.nameAr || product.name}"؟`)) {
+      this.isLoading = true;
+      
+      this.productsService.deleteProduct(product._id || product.id).subscribe({
+        next: (response: any) => {
+          console.log('Product deleted successfully:', response);
+          this.isLoading = false;
+          
+          // Reload products
+          if (this.currentSubcategory) {
+            this.loadProducts();
+          } else {
+            this.loadAllProducts();
+          }
+        },
+        error: (error: any) => {
+          console.error('Error deleting product:', error);
+          this.error = 'خطأ في حذف المنتج';
+          this.isLoading = false;
+        }
+      });
+    }
   }
 
   // Helper method to check if we're in subcategory view
@@ -120,7 +236,15 @@ export class ProductsListComponent implements OnInit {
   }
 
   addNewProduct(): void {
-    this.router.navigate(['/products/add']);
+    if (this.currentSubcategory) {
+      // Navigate to add product with subcategory pre-selected
+      this.router.navigate(['/products/add'], {
+        queryParams: { subcategory: this.currentSubcategory }
+      });
+    } else {
+      // Navigate to add product without subcategory
+      this.router.navigate(['/products/add']);
+    }
   }
 
   getStatusText(product: any): string {
@@ -133,11 +257,26 @@ export class ProductsListComponent implements OnInit {
       : 'bg-red-100 text-red-800';
   }
 
-  getPriceText(product: any): string {
+  getOriginalPriceText(product: any): string {
     if (product.price) {
-      return `${product.price} ريال`;
+      return `${product.price} ج`;
     }
     return 'السعر غير محدد';
+  }
+
+  getFinalPriceText(product: any): string {
+    if (product.productType === 'specialOffer' && product.discount > 0) {
+      const discountedPrice = product.price - product.discount;
+      return `${discountedPrice} ج`;
+    }
+    return this.getOriginalPriceText(product);
+  }
+
+  getDiscountPercentage(product: any): number {
+    if (product.productType === 'specialOffer' && product.discount > 0 && product.price > 0) {
+      return Math.round((product.discount / product.price) * 100);
+    }
+    return 0;
   }
 
   trackByProduct(index: number, product: any): any {
@@ -173,5 +312,65 @@ export class ProductsListComponent implements OnInit {
       pages.push(i);
     }
     return pages;
+  }
+
+  // Filter methods
+  applyFilters(): void {
+    this.currentPage = 1; // Reset to first page when applying filters
+    if (this.currentSubcategory) {
+      this.loadProducts();
+    } else {
+      this.loadAllProducts();
+    }
+  }
+
+  clearFilters(): void {
+    this.filters = {
+      subcategory: '',
+      productType: ''
+    };
+    this.applyFilters();
+  }
+
+  sendFiltersToAPI(): void {
+    console.log('🚀 Sending filters to API:', this.filters);
+    
+    // Show loading state
+    this.isLoading = true;
+    this.error = null;
+    
+    // Reset to first page
+    this.currentPage = 1;
+    
+    // Send filters to API
+    if (this.currentSubcategory) {
+      this.loadProducts();
+    } else {
+      this.loadAllProducts();
+    }
+    
+    // Log the API call details
+    const apiParams = this.buildQueryParams();
+    console.log('📡 API Parameters:', apiParams);
+    console.log('🔗 API Endpoint:', this.currentSubcategory 
+      ? `/products/subcategory/${this.currentSubcategory}` 
+      : '/products/admin'
+    );
+    
+    // Show success notification
+  }
+
+  // Helper method to build query params from filters
+  private buildQueryParams(): any {
+    const params: any = {
+      page: this.currentPage,
+      limit: this.pageSize
+    };
+
+    // Add filters only if they have values
+    if (this.filters.subcategory) params.subcategory = this.filters.subcategory;
+    if (this.filters.productType) params.productType = this.filters.productType;
+
+    return params;
   }
 }

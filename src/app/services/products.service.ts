@@ -19,7 +19,7 @@ export class ProductsService {
         name: 'Cleaners'
       },
       images: ['https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=400&h=300&fit=crop&crop=center'],
-      featured: true,
+      productType: 'featured',
       isActive: true,
       createdAt: '2024-01-01T00:00:00.000Z',
       updatedAt: '2024-01-01T00:00:00.000Z'
@@ -35,7 +35,7 @@ export class ProductsService {
         name: 'Cleaners'
       },
       images: ['https://images.unsplash.com/photo-1581578731548-c64695cc6952?w=400&h=300&fit=crop&crop=center'],
-      featured: true,
+      productType: 'bestSeller',
       isActive: true,
       createdAt: '2024-01-01T00:00:00.000Z',
       updatedAt: '2024-01-01T00:00:00.000Z'
@@ -51,7 +51,7 @@ export class ProductsService {
         name: 'Electronics'
       },
       images: ['https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=400&h=300&fit=crop&crop=center'],
-      featured: false,
+      productType: 'normal',
       isActive: true,
       createdAt: '2024-01-01T00:00:00.000Z',
       updatedAt: '2024-01-01T00:00:00.000Z'
@@ -67,7 +67,7 @@ export class ProductsService {
         name: 'Home & Garden'
       },
       images: ['https://images.unsplash.com/photo-1585320806297-9794b3e4eeae?w=400&h=300&fit=crop&crop=center'],
-      featured: false,
+      productType: 'normal',
       isActive: true,
       createdAt: '2024-01-01T00:00:00.000Z',
       updatedAt: '2024-01-01T00:00:00.000Z'
@@ -83,7 +83,7 @@ export class ProductsService {
         name: 'Books'
       },
       images: ['https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?w=400&h=300&fit=crop&crop=center'],
-      featured: false,
+      productType: 'normal',
       isActive: true,
       createdAt: '2024-01-01T00:00:00.000Z',
       updatedAt: '2024-01-01T00:00:00.000Z'
@@ -99,7 +99,7 @@ export class ProductsService {
         name: 'Clothing'
       },
       images: ['https://images.unsplash.com/photo-1542272604-787c3835535d?w=400&h=300&fit=crop&crop=center'],
-      featured: true,
+      productType: 'featured',
       isActive: true,
       createdAt: '2024-01-01T00:00:00.000Z',
       updatedAt: '2024-01-01T00:00:00.000Z'
@@ -115,7 +115,8 @@ export class ProductsService {
         name: 'Clothing'
       },
       images: ['https://images.unsplash.com/photo-1551028719-00167b16eac5?w=400&h=300&fit=crop&crop=center'],
-      featured: false,
+      productType: 'specialOffer',
+      discount: 20,
       isActive: true,
       createdAt: '2024-01-01T00:00:00.000Z',
       updatedAt: '2024-01-01T00:00:00.000Z'
@@ -131,7 +132,7 @@ export class ProductsService {
         name: 'Home & Garden'
       },
       images: ['https://images.unsplash.com/photo-1570222094114-d054a8173cdb?w=400&h=300&fit=crop&crop=center'],
-      featured: false,
+      productType: 'normal',
       isActive: true,
       createdAt: '2024-01-01T00:00:00.000Z',
       updatedAt: '2024-01-01T00:00:00.000Z'
@@ -140,102 +141,50 @@ export class ProductsService {
 
   constructor(private apiService: ApiService) { }
 
-  getProducts(page: number = 1, limit: number = 20): Observable<any> {
-    console.log('🔄 Calling API: GET /products/admin');
-    console.log('📄 Page:', page, 'Limit:', limit);
+  getProducts(page: number = 1, limit: number = 20, filters?: any): Observable<any> {
+    const params: any = { page, limit };
     
-    const params = { page, limit };
+    // Add filters to params
+    if (filters) {
+      if (filters.subcategory) params.subcategory = filters.subcategory;
+      if (filters.productType) params.productType = filters.productType;
+    }
     
-    return this.apiService.get<any>('/products/admin', params).pipe(
-      map((response: any) => {
-        console.log('✅ API Response for products:', response);
-        return response;
-      }),
-      catchError((error: any) => {
-        console.error('❌ API Error for products:', error);
-        console.log('🔄 Falling back to mock data');
+    return this.apiService.get<any>('/products/admin', params);
+  }
+
+  getProduct(id: string): Observable<any | undefined> {
+    // First try to get from API
+    return this.apiService.get<any>(`/products/${id}`).pipe(
+      catchError((error) => {
+        console.warn('API failed, falling back to mock data:', error);
         
-        // Create mock response with pagination
-        const mockResponse: any = {
-          success: true,
-          data: this.mockProducts,
-          pagination: {
-            current: page,
-            pages: Math.ceil(this.mockProducts.length / limit),
-            total: this.mockProducts.length,
-            limit: limit
-          }
-        };
-        
-        return of(mockResponse).pipe(delay(500));
+        // Return mock data as fallback
+        const mockProduct = this.mockProducts.find(p => p._id === id);
+        if (mockProduct) {
+          console.log('Returning mock product:', mockProduct);
+          return of(mockProduct);
+        } else {
+          console.error('Product not found in mock data');
+          return of(null);
+        }
       })
     );
   }
 
-  getProduct(id: string): Observable<any | undefined> {
-    const product = this.mockProducts.find((p: any) => p._id === id);
-    return of(product).pipe(delay(300));
-  }
-
   createProduct(productData: any): Observable<any> {
-    const newProduct: any = {
-      _id: Date.now().toString(),
-      name: productData.name,
-      description: productData.description,
-      price: productData.price,
-      stock: productData.stock,
-      category: {
-        _id: 'mock-category-id',
-        name: productData.category
-      },
-      images: productData.images.map(() => 'https://via.placeholder.com/300x200'),
-      featured: productData.featured,
-      isActive: productData.isActive,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString()
-    };
-    this.mockProducts.push(newProduct);
-    return of(newProduct).pipe(delay(800));
+    return this.apiService.post('/products', productData);
   }
 
   updateProduct(id: string, productData: Partial<any>): Observable<any> {
-    const index = this.mockProducts.findIndex((p: any) => p._id === id);
-    if (index !== -1) {
-      // Handle images separately to avoid type conflicts
-      const { images, category, ...otherData } = productData;
-      const updatedProduct = { 
-        ...this.mockProducts[index], 
-        ...otherData, 
-        updatedAt: new Date().toISOString() 
-      };
-      
-      // If category is provided, update it
-      if (category) {
-        updatedProduct.category = {
-          _id: 'mock-category-id',
-          name: category
-        };
-      }
-      
-      // If images are provided, convert them to URLs
-      if (images) {
-        updatedProduct.images = images.map(() => 'https://via.placeholder.com/300x200');
-      }
-      
-      this.mockProducts[index] = updatedProduct;
-      return of(this.mockProducts[index]).pipe(delay(800));
-    }
-    throw new Error('Product not found');
+    return this.apiService.put(`/products/${id}`, productData);
   }
 
-  deleteProduct(id: string): Observable<boolean> {
-    const index = this.mockProducts.findIndex((p: any) => p._id === id);
-    if (index !== -1) {
-      this.mockProducts.splice(index, 1);
-      return of(true).pipe(delay(500));
-    }
-    return of(false).pipe(delay(500));
+  deleteProduct(id: string): Observable<any> {
+    return this.apiService.delete(`/products/${id}`);
   }
+
+
 
   getFeaturedProducts(): Observable<any[]> {
     const featured = this.mockProducts.filter((p: any) => p.featured);
@@ -252,25 +201,15 @@ export class ProductsService {
     return of([]).pipe(delay(300));
   }
 
-  getProductsBySubcategory(subcategoryId: string, page: number = 1, limit: number = 12): Observable<any> {
-    return this.apiService.get<any>(`products?page=${page}&limit=${limit}&subcategory=${subcategoryId}`).pipe(
-      catchError((error) => {
-        console.log('❌ Error fetching products by subcategory from API, falling back to mock data');
-        
-        // Filter mock products by subcategory (for demo purposes)
-        const filteredProducts = this.mockProducts.filter((p: any) => 
-          p.category && p.category._id === subcategoryId
-        );
-        
-        // Create mock response with pagination
-        const mockResponse: any = {
-          success: true,
-          data: filteredProducts,
-          total: filteredProducts.length
-        };
-        
-        return of(mockResponse).pipe(delay(500));
-      })
-    );
+  getProductsBySubcategory(subcategoryId: string, page: number = 1, limit: number = 12, filters?: any): Observable<any> {
+    // Build query parameters
+    const params: any = { page, limit };
+    
+    if (filters) {
+      if (filters.subcategory) params.subcategory = filters.subcategory;
+      if (filters.productType) params.productType = filters.productType;
+    }
+    
+    return this.apiService.get<any>(`/products/subcategory/${subcategoryId}`, params);
   }
 }

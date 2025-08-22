@@ -16,7 +16,7 @@ export class UsersService {
       lastName: 'النظام',
       role: 'admin',
       isActive: true,
-      avatar: 'https://via.placeholder.com/150',
+      avatar: '/assets/images/default-user.svg',
       createdAt: new Date('2024-01-01'),
       lastLogin: new Date('2024-01-15')
     },
@@ -28,7 +28,7 @@ export class UsersService {
       lastName: 'المبيعات',
       role: 'manager',
       isActive: true,
-      avatar: 'https://via.placeholder.com/150',
+      avatar: '/assets/images/default-user.svg',
       createdAt: new Date('2024-01-02'),
       lastLogin: new Date('2024-01-14')
     }

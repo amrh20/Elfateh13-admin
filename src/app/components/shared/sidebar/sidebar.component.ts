@@ -43,11 +43,11 @@ export class SidebarComponent implements OnInit {
       route: '/users',
       icon: 'users'
     },
-    {
-      title: 'التقارير',
-      route: '/reports',
-      icon: 'reports'
-    },
+    // {
+    //   title: 'التقارير',
+    //   route: '/reports',
+    //   icon: 'reports'
+    // },
     {
       title: 'الإعدادات',
       route: '/settings',

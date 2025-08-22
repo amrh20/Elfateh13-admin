@@ -7,3 +7,41 @@
         object-fit: cover;
     }
 }
+.bg-indigo-600 {
+    background-color: #6366f1;
+    color: #fff;
+    border-color: #6366f1;
+    &:hover {
+        background-color: #4f46e5;
+        border-color: #4f46e5;
+    }
+}
+.bg-emerald-600 {
+    background-color: #10b981;
+    color: #fff;
+    border-color: #10b981;
+    &:hover {
+        background-color: #059669;
+        border-color: #059669;
+    }
+}
+.bg-green-600  {
+    background-color: #10b981;
+    color: #fff;
+    border-color: #10b981;
+    &:hover {
+        background-color: #059669;
+        border-color: #059669;
+    }
+}
+
+.text-gray-600  {
+    color: #6b7280;
+}
+.text-gray-900  {
+    color: #1f2937;
+}
+.text-2xl {
+    font-size: 1.5rem;
+    line-height: 2rem;
+}
