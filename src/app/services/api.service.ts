@@ -25,6 +25,7 @@ export class ApiService {
    * @param headers - Additional headers
    */
   get<T>(endpoint: string, params?: any, headers?: any): Observable<T> {
+    
     let httpParams = new HttpParams();
     
     if (params) {

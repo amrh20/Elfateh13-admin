@@ -3,26 +3,6 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ProductsService } from '../../services/products.service';
 import { OrdersService } from '../../services/orders.service';
-import { Product } from '../../interfaces/product.interface';
-import { Order } from '../../interfaces/order.interface';
-
-interface ProductAnalytics {
-  product: Product;
-  totalSales: number;
-  totalRevenue: number;
-  lastSoldDate?: Date;
-  daysSinceLastSale: number;
-  averageRating: number;
-  totalReviews: number;
-}
-
-interface SalesAnalytics {
-  topSellingProducts: ProductAnalytics[];
-  slowMovingProducts: ProductAnalytics[];
-  productsForPromotion: ProductAnalytics[];
-  monthlyRevenue: { month: string; revenue: number }[];
-  categoryPerformance: { category: string; sales: number; revenue: number }[];
-}
 
 @Component({
   selector: 'app-reports',
@@ -32,7 +12,7 @@ interface SalesAnalytics {
   styleUrl: './reports.component.scss'
 })
 export class ReportsComponent implements OnInit {
-  analytics: SalesAnalytics = {
+  analytics: any = {
     topSellingProducts: [],
     slowMovingProducts: [],
     productsForPromotion: [],
@@ -56,34 +36,34 @@ export class ReportsComponent implements OnInit {
     this.isLoading = true;
 
     // تحميل المنتجات والطلبات
-    this.productsService.getProducts().subscribe(products => {
-      this.ordersService.getOrders().subscribe(orders => {
+    this.productsService.getProducts().subscribe((products: any) => {
+      this.ordersService.getOrders().subscribe((orders: any) => {
         this.generateAnalytics(products, orders);
         this.isLoading = false;
       });
     });
   }
 
-  generateAnalytics(products: Product[], orders: Order[]): void {
+  generateAnalytics(products: any[], orders: any[]): void {
     // تحليل المبيعات لكل منتج
     const productAnalytics = this.analyzeProductSales(products, orders);
     
     // المنتجات الأكثر مبيعاً
     this.analytics.topSellingProducts = productAnalytics
-      .filter(p => p.totalSales > 0)
-      .sort((a, b) => b.totalSales - a.totalSales)
+      .filter((p: any) => p.totalSales > 0)
+      .sort((a: any, b: any) => b.totalSales - a.totalSales)
       .slice(0, 10);
 
     // المنتجات بطيئة الحركة (لم تُبَع منذ أكثر من 30 يوم)
     this.analytics.slowMovingProducts = productAnalytics
-      .filter(p => p.daysSinceLastSale > 30)
-      .sort((a, b) => b.daysSinceLastSale - a.daysSinceLastSale)
+      .filter((p: any) => p.daysSinceLastSale > 30)
+      .sort((a: any, b: any) => b.daysSinceLastSale - a.daysSinceLastSale)
       .slice(0, 10);
 
     // المنتجات المناسبة للعروض (مخزون عالي، مبيعات منخفضة)
     this.analytics.productsForPromotion = productAnalytics
-      .filter(p => p.product.stock > 10 && p.totalSales < 5)
-      .sort((a, b) => b.product.stock - a.product.stock)
+      .filter((p: any) => p.product.stock > 10 && p.totalSales < 5)
+      .sort((a: any, b: any) => b.product.stock - a.product.stock)
       .slice(0, 10);
 
     // تحليل الإيرادات الشهرية
@@ -93,28 +73,28 @@ export class ReportsComponent implements OnInit {
     this.analytics.categoryPerformance = this.analyzeCategoryPerformance(products, orders);
   }
 
-  analyzeProductSales(products: Product[], orders: Order[]): ProductAnalytics[] {
+  analyzeProductSales(products: any[], orders: any[]): any[] {
     const productSales = new Map<string, { sales: number; revenue: number; lastSold: Date }>();
 
     // تحليل الطلبات
-    orders.forEach(order => {
-      order.items.forEach(item => {
-        const product = products.find(p => p.id === item.productId);
+    orders.forEach((order: any) => {
+      order.items.forEach((item: any) => {
+        const product = products.find((p: any) => p._id === item.productId);
         if (product) {
-          const existing = productSales.get(product.id) || { sales: 0, revenue: 0, lastSold: new Date(0) };
+          const existing = productSales.get(product._id) || { sales: 0, revenue: 0, lastSold: new Date(0) };
           existing.sales += item.quantity;
           existing.revenue += item.quantity * item.price;
           if (new Date(order.createdAt) > existing.lastSold) {
             existing.lastSold = new Date(order.createdAt);
           }
-          productSales.set(product.id, existing);
+          productSales.set(product._id, existing);
         }
       });
     });
 
     // إنشاء تحليلات المنتجات
-    return products.map(product => {
-      const sales = productSales.get(product.id) || { sales: 0, revenue: 0, lastSold: new Date(0) };
+    return products.map((product: any) => {
+      const sales = productSales.get(product._id) || { sales: 0, revenue: 0, lastSold: new Date(0) };
       const daysSinceLastSale = sales.lastSold.getTime() > 0 
         ? Math.floor((Date.now() - sales.lastSold.getTime()) / (1000 * 60 * 60 * 24))
         : 999;
@@ -131,16 +111,16 @@ export class ReportsComponent implements OnInit {
     });
   }
 
-  generateMonthlyRevenue(orders: Order[]): { month: string; revenue: number }[] {
+  generateMonthlyRevenue(orders: any[]): { month: string; revenue: number }[] {
     const monthlyData = new Map<string, number>();
     
-    orders.forEach(order => {
+    orders.forEach((order: any) => {
       const date = new Date(order.createdAt);
       const monthKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
       const monthName = date.toLocaleDateString('ar-EG', { year: 'numeric', month: 'long' });
       
       const existing = monthlyData.get(monthKey) || 0;
-      const orderTotal = order.items.reduce((sum, item) => sum + (item.quantity * item.price), 0);
+      const orderTotal = order.items.reduce((sum: number, item: any) => sum + (item.quantity * item.price), 0);
       monthlyData.set(monthKey, existing + orderTotal);
     });
 
@@ -153,17 +133,18 @@ export class ReportsComponent implements OnInit {
       .slice(-6); // آخر 6 أشهر
   }
 
-  analyzeCategoryPerformance(products: Product[], orders: Order[]): { category: string; sales: number; revenue: number }[] {
+  analyzeCategoryPerformance(products: any[], orders: any[]): { category: string; sales: number; revenue: number }[] {
     const categoryData = new Map<string, { sales: number; revenue: number }>();
 
-    orders.forEach(order => {
-      order.items.forEach(item => {
-        const product = products.find(p => p.id === item.productId);
+    orders.forEach((order: any) => {
+      order.items.forEach((item: any) => {
+        const product = products.find((p: any) => p._id === item.productId);
         if (product) {
-          const existing = categoryData.get(product.category) || { sales: 0, revenue: 0 };
+          const categoryName = product.category?.name || product.category;
+          const existing = categoryData.get(categoryName) || { sales: 0, revenue: 0 };
           existing.sales += item.quantity;
           existing.revenue += item.quantity * item.price;
-          categoryData.set(product.category, existing);
+          categoryData.set(categoryName, existing);
         }
       });
     });
@@ -208,11 +189,11 @@ export class ReportsComponent implements OnInit {
   }
 
   getTotalSales(): number {
-    return this.analytics.topSellingProducts.reduce((sum, item) => sum + item.totalSales, 0);
+    return this.analytics.topSellingProducts.reduce((sum: number, item: any) => sum + item.totalSales, 0);
   }
 
   getTotalRevenue(): number {
-    return this.analytics.topSellingProducts.reduce((sum, item) => sum + item.totalRevenue, 0);
+    return this.analytics.topSellingProducts.reduce((sum: number, item: any) => sum + item.totalRevenue, 0);
   }
 
   onPeriodChange(): void {

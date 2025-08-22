@@ -1,7 +1,6 @@
 import { Injectable } from '@angular/core';
 import { Observable, of } from 'rxjs';
-import { delay, catchError, map, switchMap } from 'rxjs/operators';
-import { Category, CategoryFormData } from '../interfaces/category.interface';
+import { catchError, map, switchMap } from 'rxjs/operators';
 import { ApiService } from './api.service';
 import { AuthService } from './auth.service';
 
@@ -9,104 +8,17 @@ import { AuthService } from './auth.service';
   providedIn: 'root'
 })
 export class CategoriesService {
-  private mockCategories: Category[] = [
-    {
-      id: '1',
-      name: 'Cleaners',
-      nameAr: 'منظفات',
-      description: 'Household cleaning products',
-      descriptionAr: 'منتجات تنظيف منزلية',
-      icon: 'bottle',
-      image: 'https://via.placeholder.com/200x150',
-      type: 'main',
-      productCount: 3,
-      isActive: true,
-      createdAt: new Date(),
-      updatedAt: new Date(),
-      subCategories: [
-        {
-          id: '3',
-          name: 'Floor Cleaners',
-          nameAr: 'منظفات الأرضيات',
-          description: 'Floor cleaning products',
-          descriptionAr: 'منتجات تنظيف الأرضيات',
-          productCount: 2,
-          isActive: true
-        }
-      ]
-    },
-    {
-      id: '2',
-      name: 'Household Tools',
-      nameAr: 'أدوات منزلية',
-      description: 'Household tools and equipment',
-      descriptionAr: 'أدوات ومعدات منزلية',
-      icon: 'tools',
-      image: 'https://via.placeholder.com/200x150',
-      type: 'main',
-      productCount: 3,
-      isActive: true,
-      createdAt: new Date(),
-      updatedAt: new Date(),
-      subCategories: [
-        {
-          id: '4',
-          name: 'Kitchen Tools',
-          nameAr: 'أدوات المطبخ',
-          description: 'Kitchen tools and utensils',
-          descriptionAr: 'أدوات وأواني المطبخ',
-          productCount: 5,
-          isActive: true
-        }
-      ]
-    },
-    {
-      id: '3',
-      name: 'Floor Cleaners',
-      nameAr: 'منظفات الأرضيات',
-      description: 'Floor cleaning products',
-      descriptionAr: 'منتجات تنظيف الأرضيات',
-      icon: 'brush',
-      image: 'https://via.placeholder.com/200x150',
-      type: 'sub',
-      parentId: '1',
-      parentName: 'منظفات',
-      productCount: 2,
-      isActive: true,
-      createdAt: new Date(),
-      updatedAt: new Date(),
-      subCategories: []
-    },
-    {
-      id: '4',
-      name: 'Kitchen Tools',
-      nameAr: 'أدوات المطبخ',
-      description: 'Kitchen tools and utensils',
-      descriptionAr: 'أدوات وأواني المطبخ',
-      icon: 'tools',
-      image: 'https://via.placeholder.com/200x150',
-      type: 'sub',
-      parentId: '2',
-      parentName: 'أدوات منزلية',
-      productCount: 5,
-      isActive: true,
-      createdAt: new Date(),
-      updatedAt: new Date(),
-      subCategories: []
-    }
-  ];
-
   constructor(
     private apiService: ApiService,
     private authService: AuthService
   ) { }
 
-  getCategories(): Observable<Category[]> {
+  getCategories(): Observable<any[]> {
     // Get auth token for admin endpoint
     const token = localStorage.getItem('authToken');
     
     if (!token) {
-      console.warn('No auth token found, trying public endpoint');
+
       return this.getCategoriesFromPublic();
     }
 
@@ -114,30 +26,26 @@ export class CategoriesService {
       'Authorization': `Bearer ${token}`
     };
 
-    return this.apiService.get<{data: Category[], success: boolean, message: string}>('/categories/admin', {}, headers).pipe(
-      map(response => {
-        console.log('API Response for /categories/admin:', response);
+    return this.apiService.get<any>('/categories/admin', {}, headers).pipe(
+      map((response: any) => {
+
         if (response.success && response.data) {
           // Map API response to Category interface
-          const mappedCategories = response.data.map(apiCategory => this.mapApiResponseToCategory(apiCategory));
-          console.log('Mapped categories:', mappedCategories);
-          return { success: true, data: mappedCategories };
+          const mappedCategories = response.data.map((apiCategory: any) => this.mapApiResponseToCategory(apiCategory));
+          return mappedCategories;
         } else {
-          console.warn('Admin endpoint returned unsuccessful response, trying public endpoint');
-          return { success: false, data: null };
-        }
-      }),
-      switchMap(result => {
-        if (result.success && result.data) {
-          return of(result.data);
-        } else {
-          console.log('Trying public endpoint as fallback');
           return this.getCategoriesFromPublic();
         }
       }),
-      catchError(error => {
-        console.error('Error calling /categories/admin API:', error);
-        console.log('Trying public endpoint as fallback');
+      switchMap((result: any) => {
+        if (Array.isArray(result)) {
+          return of(result);
+        } else {
+          return this.getCategoriesFromPublic();
+        }
+      }),
+      catchError((error: any) => {
+
         return this.getCategoriesFromPublic();
       })
     );
@@ -145,46 +53,45 @@ export class CategoriesService {
 
   // Get public categories for comparison
   getPublicCategories(): Observable<any> {
-    console.log('Getting public categories for comparison');
+
     
     return this.apiService.get<any>('/categories').pipe(
-      map(response => {
-        console.log('Public categories response:', response);
+      map((response: any) => {
+
         return response;
       }),
-      catchError(error => {
-        console.error('Error getting public categories:', error);
+      catchError((error: any) => {
+
         return of({ error: error.message || 'Unknown error' });
       })
     );
   }
 
   // Get categories from public endpoint as fallback
-  getCategoriesFromPublic(): Observable<Category[]> {
-    console.log('Getting categories from public endpoint as fallback');
+  getCategoriesFromPublic(): Observable<any[]> {
+
     
-    return this.apiService.get<{data: any[], success: boolean, count: number}>('/categories').pipe(
-      map(response => {
-        console.log('Public categories fallback response:', response);
+    return this.apiService.get<any>('/categories').pipe(
+      map((response: any) => {
+
         if (response.success && response.data) {
-          const mappedCategories = response.data.map(apiCategory => this.mapApiResponseToCategory(apiCategory));
-          console.log('Mapped categories from public endpoint:', mappedCategories);
+          const mappedCategories = response.data.map((apiCategory: any) => this.mapApiResponseToCategory(apiCategory));
+
           return mappedCategories;
         } else {
-          console.warn('Public endpoint returned unsuccessful response:', response);
-          return this.mockCategories;
+
+          return [];
         }
       }),
-      catchError(error => {
-        console.error('Error getting categories from public endpoint:', error);
-        console.log('Falling back to mock data');
-        return of(this.mockCategories).pipe(delay(500));
+      catchError((error: any) => {
+
+        return of([]);
       })
     );
   }
 
   // Map API response to Category interface
-  private mapApiResponseToCategory(apiCategory: any): Category {
+  private mapApiResponseToCategory(apiCategory: any): any {
     return {
       id: apiCategory._id || apiCategory.id,
       name: apiCategory.name || '',
@@ -193,77 +100,186 @@ export class CategoriesService {
       descriptionAr: apiCategory.descriptionAr || apiCategory.description || '', // Fallback to English description
       icon: apiCategory.icon || 'folder', // Default icon
       image: apiCategory.image || '',
-      type: 'main', // Default to main category
-      subCategories: [], // Empty array for now
+      type: apiCategory.parent ? 'sub' : 'main', // Determine type based on parent
+      parentId: apiCategory.parent || null,
+      subCategories: apiCategory.subcategories ? apiCategory.subcategories.map((sub: any) => this.mapApiResponseToCategory(sub)) : [],
       productCount: apiCategory.productCount || 0,
-      isActive: apiCategory.isActive || true,
-      createdAt: new Date(apiCategory.createdAt),
-      updatedAt: new Date(apiCategory.updatedAt)
+      isActive: apiCategory.isActive !== undefined ? apiCategory.isActive : true,
+      createdAt: apiCategory.createdAt ? new Date(apiCategory.createdAt) : new Date(),
+      updatedAt: apiCategory.updatedAt ? new Date(apiCategory.updatedAt) : new Date()
     };
   }
 
-  getCategory(id: string): Observable<Category | undefined> {
-    const category = this.mockCategories.find(c => c.id === id);
-    return of(category).pipe(delay(300));
-  }
+  getCategory(id: string): Observable<any | undefined> {
+    const token = localStorage.getItem('authToken');
+    
+    if (!token) {
 
-  createCategory(categoryData: CategoryFormData): Observable<Category> {
-    const newCategory: Category = {
-      id: Date.now().toString(),
-      ...categoryData,
-      image: categoryData.image ? 'https://via.placeholder.com/200x150' : undefined,
-      productCount: 0,
-      subCategories: [],
-      createdAt: new Date(),
-      updatedAt: new Date()
-    };
-    this.mockCategories.push(newCategory);
-    return of(newCategory).pipe(delay(800));
-  }
-
-  updateCategory(id: string, categoryData: Partial<CategoryFormData>): Observable<Category> {
-    const index = this.mockCategories.findIndex(c => c.id === id);
-    if (index !== -1) {
-      // Handle image separately to avoid type conflicts
-      const { image, ...otherData } = categoryData;
-      const updatedCategory = { 
-        ...this.mockCategories[index], 
-        ...otherData, 
-        updatedAt: new Date() 
-      };
-      
-      // If image is provided, convert it to URL
-      if (image) {
-        updatedCategory.image = 'https://via.placeholder.com/200x150';
-      }
-      
-      this.mockCategories[index] = updatedCategory;
-      return of(this.mockCategories[index]).pipe(delay(800));
+      return of(undefined);
     }
-    throw new Error('Category not found');
+
+    const headers = {
+      'Authorization': `Bearer ${token}`
+    };
+
+    return this.apiService.get<any>(`/categories/${id}`, {}, headers).pipe(
+      map((response: any) => {
+        if (response.success && response.data) {
+          return this.mapApiResponseToCategory(response.data);
+        }
+        return undefined;
+      }),
+      catchError((error: any) => {
+
+        return of(undefined);
+      })
+    );
+  }
+
+  createCategory(categoryData: any): Observable<any> {
+    // Get auth token for admin endpoint
+    const token = localStorage.getItem('authToken');
+    
+    if (!token) {
+      console.error('No auth token found, cannot create category');
+      throw new Error('Authentication required');
+    }
+
+    const headers = {
+      'Authorization': `Bearer ${token}`,
+      'Content-Type': 'application/json'
+    };
+
+    // Prepare the request body according to API specification
+    // Use Arabic fields as the main data
+    const requestBody: any = {
+      name: categoryData.nameAr, // Use Arabic name as the main name
+      description: categoryData.descriptionAr // Use Arabic description as the main description
+    };
+    
+    // Only add image if it exists and is not empty
+    if (categoryData.image && categoryData.image.trim() !== '') {
+      requestBody.image = categoryData.image;
+    }
+    
+    // Add parent only for subcategories
+    if (categoryData.type === 'sub' && categoryData.parentId) {
+      requestBody.parent = categoryData.parentId;
+    }
+
+
+
+    return this.apiService.post<any>('/categories', requestBody, headers).pipe(
+      map((response: any) => {
+
+        if (response.success && response.data) {
+          // Map API response back to our format
+          const newCategory = this.mapApiResponseToCategory(response.data);
+          return newCategory;
+        } else {
+
+          throw new Error(response.message || 'Failed to create category');
+        }
+      }),
+      catchError((error: any) => {
+
+        throw error;
+      })
+    );
+  }
+
+  updateCategory(id: string, categoryData: Partial<any>): Observable<any> {
+    const token = localStorage.getItem('authToken');
+    
+    if (!token) {
+      console.error('No auth token found, cannot update category');
+      throw new Error('Authentication required');
+    }
+
+    const headers = {
+      'Authorization': `Bearer ${token}`,
+      'Content-Type': 'application/json'
+    };
+
+    // Prepare the request body
+    const requestBody: any = {
+      name: categoryData['nameAr'] || categoryData['name'],
+      description: categoryData['descriptionAr'] || categoryData['description']
+    };
+    
+    // Only add image if it exists and is not empty
+    if (categoryData['image'] && categoryData['image'].trim() !== '') {
+      requestBody.image = categoryData['image'];
+    }
+    
+    // Add parent only for subcategories
+    if (categoryData['type'] === 'sub' && categoryData['parentId']) {
+      requestBody.parent = categoryData['parentId'];
+    }
+
+
+
+    return this.apiService.put<any>(`/categories/${id}`, requestBody, headers).pipe(
+      map((response: any) => {
+
+        if (response.success && response.data) {
+          return this.mapApiResponseToCategory(response.data);
+        } else {
+          throw new Error(response.message || 'Failed to update category');
+        }
+      }),
+      catchError((error: any) => {
+
+        throw error;
+      })
+    );
   }
 
   deleteCategory(id: string): Observable<boolean> {
-    const index = this.mockCategories.findIndex(c => c.id === id);
-    if (index !== -1) {
-      this.mockCategories.splice(index, 1);
-      return of(true).pipe(delay(500));
+    const token = localStorage.getItem('authToken');
+    
+    if (!token) {
+      console.error('No auth token found, cannot delete category');
+      throw new Error('Authentication required');
     }
-    return of(false).pipe(delay(500));
+
+    const headers = {
+      'Authorization': `Bearer ${token}`
+    };
+
+
+
+    return this.apiService.delete<any>(`/categories/${id}`, headers).pipe(
+      map((response: any) => {
+
+        if (response.success) {
+          return true;
+        } else {
+          throw new Error(response.message || 'Failed to delete category');
+        }
+      }),
+      catchError((error: any) => {
+
+        throw error;
+      })
+    );
   }
 
-  getActiveCategories(): Observable<Category[]> {
-    const active = this.mockCategories.filter(c => c.isActive);
-    return of(active).pipe(delay(300));
+  getActiveCategories(): Observable<any[]> {
+    return this.getCategories().pipe(
+      map((categories: any[]) => categories.filter((c: any) => c.isActive))
+    );
   }
 
-  getMainCategories(): Observable<Category[]> {
-    const mainCategories = this.mockCategories.filter(c => c.type === 'main');
-    return of(mainCategories).pipe(delay(300));
+  getMainCategories(): Observable<any[]> {
+    return this.getCategories().pipe(
+      map((categories: any[]) => categories.filter((c: any) => c.type === 'main'))
+    );
   }
 
-  getSubCategories(parentId: string): Observable<Category[]> {
-    const subCategories = this.mockCategories.filter(c => c.type === 'sub' && c.parentId === parentId);
-    return of(subCategories).pipe(delay(300));
+  getSubCategories(parentId: string): Observable<any[]> {
+    return this.getCategories().pipe(
+      map((categories: any[]) => categories.filter((c: any) => c.type === 'sub' && c.parentId === parentId))
+    );
   }
 }

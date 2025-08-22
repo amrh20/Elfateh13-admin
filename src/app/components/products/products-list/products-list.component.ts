@@ -1,147 +1,376 @@
 import { Component, OnInit } from '@angular/core';
+import { ActivatedRoute, Router } from '@angular/router';
+import { ProductsService } from '../../../services/products.service';
+import { ApiService } from '../../../services/api.service';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Router } from '@angular/router';
-import { ProductsService } from '../../../services/products.service';
-import { Product } from '../../../interfaces/product.interface';
+import { PaginationComponent, PaginationInfo } from '../../shared/pagination/pagination.component';
 
 @Component({
   selector: 'app-products-list',
-  standalone: true,
-  imports: [CommonModule, FormsModule],
   templateUrl: './products-list.component.html',
-  styleUrl: './products-list.component.scss'
+  styleUrls: ['./products-list.component.scss'],
+  standalone: true,
+  imports:[CommonModule, FormsModule, PaginationComponent]
 })
 export class ProductsListComponent implements OnInit {
-  products: Product[] = [];
-  filteredProducts: Product[] = [];
-  isLoading = true;
-  searchTerm = '';
-  selectedCategory = '';
-  sortBy = 'name';
+  products: any[] = [];
+  isLoading = false;
+  error: string | null = null;
+  currentPage = 1;
+  pageSize = 12;
+  totalPages = 1;
+  totalProducts = 0;
+  currentSubcategory: string | null = null;
+  subcategoryName: string = '';
+  
+  // Categories and subcategories
+  Categories: any[] = [];
+  subCategories: any[] = [];
+  
+  // Filters object
+  filters = {
+    subcategory: '',
+    productType: ''
+  };
+  
+  // Helper for pagination
+  Array = Array;
 
   constructor(
     private productsService: ProductsService,
-    private router: Router
+    private apiService: ApiService,
+    private route: ActivatedRoute,
+    public router: Router
   ) {}
 
   ngOnInit(): void {
-    this.loadProducts();
+    // Load categories and subcategories
+    this.loadCategories();
+    
+    // Get subcategory from query params
+    this.route.queryParamMap.subscribe(params => {
+      this.currentSubcategory = params.get('subcategory');
+      if (this.currentSubcategory) {
+        // Load products filtered by subcategory
+        this.loadProducts();
+        this.loadSubcategoryInfo();
+      } else {
+        // Load all products (admin view)
+        this.loadAllProducts();
+      }
+    });
   }
 
   loadProducts(): void {
+    if (!this.currentSubcategory) return;
+
     this.isLoading = true;
-    this.productsService.getProducts().subscribe({
-      next: (products) => {
-        this.products = products;
-        this.filteredProducts = products;
+    this.error = null;
+
+    const params = this.buildQueryParams();
+    params.subcategory = this.currentSubcategory; // Override with current subcategory
+
+    this.productsService.getProductsBySubcategory(
+      this.currentSubcategory, 
+      this.currentPage, 
+      this.pageSize,
+      params
+    ).subscribe({
+      next: (response: any) => {
+        this.products = response.data || [];
+        this.totalProducts = response.total || response.pagination?.total || 0;
+        this.totalPages = response.pagination?.pages || Math.ceil(this.totalProducts / this.pageSize);
         this.isLoading = false;
       },
-      error: (error) => {
-        console.error('Error loading products:', error);
+      error: (error: any) => {
+        this.error = 'خطأ في تحميل المنتجات';
         this.isLoading = false;
       }
     });
   }
 
-  filterProducts(): void {
-    this.filteredProducts = this.products.filter(product => {
-      const matchesSearch = !this.searchTerm || 
-        product.name.toLowerCase().includes(this.searchTerm.toLowerCase()) ||
-        product.nameAr.toLowerCase().includes(this.searchTerm.toLowerCase()) ||
-        product.description.toLowerCase().includes(this.searchTerm.toLowerCase());
-      
-      const matchesCategory = !this.selectedCategory || 
-        product.category === this.selectedCategory;
+  loadAllProducts(): void {
+    this.isLoading = true;
+    this.error = null;
 
-      return matchesSearch && matchesCategory;
-    });
+    const params = this.buildQueryParams();
 
-    this.sortProducts();
-  }
-
-  sortProducts(): void {
-    this.filteredProducts.sort((a, b) => {
-      switch (this.sortBy) {
-        case 'name':
-          return a.name.localeCompare(b.name);
-        case 'price':
-          return a.price - b.price;
-        case 'rating':
-          return b.rating - a.rating;
-        case 'stock':
-          return b.stock - a.stock;
-        default:
-          return 0;
+    this.productsService.getProducts(this.currentPage, this.pageSize, params).subscribe({
+      next: (response: any) => {
+        this.products = response.data || [];
+        this.totalProducts = response.pagination?.total || response.total || 0;
+        this.totalPages = response.pagination?.pages || 1;
+        this.isLoading = false;
+      },
+      error: (error: any) => {
+        this.error = 'خطأ في تحميل المنتجات';
+        this.isLoading = false;
       }
     });
   }
 
-  onSearchChange(): void {
-    this.filterProducts();
+  loadSubcategoryInfo(): void {
+    if (!this.currentSubcategory) return;
+
+    // You can add a service call here to get subcategory details
+    // For now, we'll use a placeholder
+    this.subcategoryName = 'التصنيف الفرعي';
   }
 
-  onCategoryChange(): void {
-    this.filterProducts();
+  loadCategories(): void {
+    // Load categories from API
+    this.apiService.get<any>('/categories').subscribe({
+      next: (response: any) => {
+        if (response && response.data) {
+          this.Categories = response.data;
+          // Extract all subcategories into one array
+          this.subCategories = this.extractAllSubcategories(response.data);
+          console.log('All subcategories:', this.subCategories);
+        }
+      },
+      error: (error: any) => {
+        console.error('Error fetching categories:', error);
+        // Use mock data if API fails
+        this.Categories = this.getMockCategories();
+        this.subCategories = this.extractAllSubcategories(this.Categories);
+      }
+    });
   }
 
-  onSortChange(): void {
-    this.sortProducts();
+  private extractAllSubcategories(categories: any[]): any[] {
+    const allSubcategories: any[] = [];
+    
+    categories.forEach(category => {
+      if (category.subcategories && Array.isArray(category.subcategories)) {
+        category.subcategories.forEach((subcategory: any) => {
+          allSubcategories.push({
+            id: subcategory._id || subcategory.id,
+            name: subcategory.nameAr || subcategory.name
+          });
+        });
+      }
+    });
+    
+    return allSubcategories;
   }
 
-  addProduct(): void {
-    this.router.navigate(['/products/add']);
+  private getMockCategories(): any[] {
+    return [
+      {
+        _id: '1',
+        name: 'التنظيف',
+        subcategories: [
+          { _id: '1-1', name: 'منظفات الغسيل' },
+          { _id: '1-2', name: 'منظفات المطبخ' }
+        ]
+      },
+      {
+        _id: '2',
+        name: 'الإلكترونيات',
+        subcategories: [
+          { _id: '2-1', name: 'الهواتف' },
+          { _id: '2-2', name: 'الحواسيب' }
+        ]
+      }
+    ];
   }
 
-  editProduct(productId: string): void {
-    this.router.navigate(['/products/edit', productId]);
+  // Product Actions
+  viewProductDetails(product: any): void {
+    this.router.navigate(['/products', product._id || product.id]);
   }
 
-  deleteProduct(productId: string): void {
-    if (confirm('هل أنت متأكد من حذف هذا المنتج؟')) {
-      this.productsService.deleteProduct(productId).subscribe({
-        next: (success) => {
-          if (success) {
+  editProduct(product: any): void {
+    this.router.navigate(['/products/edit', product._id || product.id], {
+      state: { product: product }
+    });
+  }
+
+  deleteProduct(product: any): void {
+    if (confirm(`هل أنت متأكد من حذف المنتج "${product.nameAr || product.name}"؟`)) {
+      this.isLoading = true;
+      
+      this.productsService.deleteProduct(product._id || product.id).subscribe({
+        next: (response: any) => {
+          console.log('Product deleted successfully:', response);
+          this.isLoading = false;
+          
+          // Reload products
+          if (this.currentSubcategory) {
             this.loadProducts();
+          } else {
+            this.loadAllProducts();
           }
         },
-        error: (error) => {
+        error: (error: any) => {
           console.error('Error deleting product:', error);
+          this.error = 'خطأ في حذف المنتج';
+          this.isLoading = false;
         }
       });
     }
   }
 
-  getCategories(): string[] {
-    return [...new Set(this.products.map(p => p.category))];
+  // Helper method to check if we're in subcategory view
+  isSubcategoryView(): boolean {
+    return !!this.currentSubcategory;
   }
 
-  getCategoryNameAr(category: string): string {
-    const categoryNames: { [key: string]: string } = {
-      'Cleaners': 'منظفات',
-      'Household Tools': 'أدوات منزلية'
+  getPaginationInfo(): PaginationInfo {
+    return {
+      current: this.currentPage,
+      pages: this.totalPages,
+      total: this.totalProducts,
+      limit: this.pageSize
     };
-    return categoryNames[category] || category;
   }
 
-  calculateDiscountedPrice(product: Product): number {
-    if (product.isOnSale && product.discountPercentage && product.discountPercentage > 0) {
-      const discount = product.price * (product.discountPercentage / 100);
-      return product.price - discount;
+  onPageChange(page: number): void {
+    this.currentPage = page;
+    if (this.currentSubcategory) {
+      this.loadProducts();
+    } else {
+      this.loadAllProducts();
     }
-    return product.price;
   }
 
-  getStatusBadge(product: Product): { text: string; class: string } {
-    if (product.isOnSale) {
-      return { text: 'عرض', class: 'bg-red-100 text-red-800' };
+  addNewProduct(): void {
+    if (this.currentSubcategory) {
+      // Navigate to add product with subcategory pre-selected
+      this.router.navigate(['/products/add'], {
+        queryParams: { subcategory: this.currentSubcategory }
+      });
+    } else {
+      // Navigate to add product without subcategory
+      this.router.navigate(['/products/add']);
     }
-    if (product.isFeatured) {
-      return { text: 'مميز', class: 'bg-blue-100 text-blue-800' };
+  }
+
+  getStatusText(product: any): string {
+    return product.isActive ? 'متوفر' : 'غير متوفر';
+  }
+
+  getStatusBadgeClass(product: any): string {
+    return product.isActive 
+      ? 'bg-green-100 text-green-800' 
+      : 'bg-red-100 text-red-800';
+  }
+
+  getOriginalPriceText(product: any): string {
+    if (product.price) {
+      return `${product.price} ج`;
     }
-    if (product.isBestSeller) {
-      return { text: 'الأكثر مبيعاً', class: 'bg-green-100 text-green-800' };
+    return 'السعر غير محدد';
+  }
+
+  getFinalPriceText(product: any): string {
+    if (product.productType === 'specialOffer' && product.discount > 0) {
+      const discountedPrice = product.price - product.discount;
+      return `${discountedPrice} ج`;
     }
-    return { text: 'عادي', class: 'bg-gray-100 text-gray-800' };
+    return this.getOriginalPriceText(product);
+  }
+
+  getDiscountPercentage(product: any): number {
+    if (product.productType === 'specialOffer' && product.discount > 0 && product.price > 0) {
+      return Math.round((product.discount / product.price) * 100);
+    }
+    return 0;
+  }
+
+  trackByProduct(index: number, product: any): any {
+    return product._id || product.id;
+  }
+
+  onImageError(event: any): void {
+    const target = event.target as HTMLImageElement;
+    if (target) {
+      // Set default image instead of hiding
+      target.src = '/assets/images/default-product.svg';
+    }
+  }
+
+  getProductImage(product: any): string {
+    // Check if product has an image
+    if (product.image && product.image.trim() !== '') {
+      return product.image;
+    }
+    
+    // Check if product has images array (legacy support)
+    if (product.images && product.images.length > 0 && product.images[0]) {
+      return product.images[0];
+    }
+    
+    // Return default image
+    return '/assets/images/default-product.svg';
+  }
+
+  getPageNumbers(): number[] {
+    const pages: number[] = [];
+    for (let i = 1; i <= this.totalPages; i++) {
+      pages.push(i);
+    }
+    return pages;
+  }
+
+  // Filter methods
+  applyFilters(): void {
+    this.currentPage = 1; // Reset to first page when applying filters
+    if (this.currentSubcategory) {
+      this.loadProducts();
+    } else {
+      this.loadAllProducts();
+    }
+  }
+
+  clearFilters(): void {
+    this.filters = {
+      subcategory: '',
+      productType: ''
+    };
+    this.applyFilters();
+  }
+
+  sendFiltersToAPI(): void {
+    console.log('🚀 Sending filters to API:', this.filters);
+    
+    // Show loading state
+    this.isLoading = true;
+    this.error = null;
+    
+    // Reset to first page
+    this.currentPage = 1;
+    
+    // Send filters to API
+    if (this.currentSubcategory) {
+      this.loadProducts();
+    } else {
+      this.loadAllProducts();
+    }
+    
+    // Log the API call details
+    const apiParams = this.buildQueryParams();
+    console.log('📡 API Parameters:', apiParams);
+    console.log('🔗 API Endpoint:', this.currentSubcategory 
+      ? `/products/subcategory/${this.currentSubcategory}` 
+      : '/products/admin'
+    );
+    
+    // Show success notification
+  }
+
+  // Helper method to build query params from filters
+  private buildQueryParams(): any {
+    const params: any = {
+      page: this.currentPage,
+      limit: this.pageSize
+    };
+
+    // Add filters only if they have values
+    if (this.filters.subcategory) params.subcategory = this.filters.subcategory;
+    if (this.filters.productType) params.productType = this.filters.productType;
+
+    return params;
   }
 }

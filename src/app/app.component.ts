@@ -13,6 +13,8 @@ import { HeaderComponent } from './components/shared/header/header.component';
   styleUrl: './app.component.scss'
 })
 export class AppComponent {
+  title = 'admin-dashboard';
+  
   constructor(private authService: AuthService) {}
   
   get currentUser$() {

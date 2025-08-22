@@ -3,10 +3,7 @@ import { CommonModule } from '@angular/common';
 import { ProductsService } from '../../../services/products.service';
 import { CategoriesService } from '../../../services/categories.service';
 import { OrdersService } from '../../../services/orders.service';
-import { AuthService, AdminUser } from '../../../services/auth.service';
-import { Product } from '../../../interfaces/product.interface';
-import { Category } from '../../../interfaces/category.interface';
-import { Order } from '../../../interfaces/order.interface';
+import { AuthService } from '../../../services/auth.service';
 
 @Component({
   selector: 'app-dashboard',
@@ -16,22 +13,22 @@ import { Order } from '../../../interfaces/order.interface';
   styleUrl: './dashboard.component.scss'
 })
 export class DashboardComponent implements OnInit {
+  isLoading = true;
+  currentUser: any = null;
+
   stats = {
     totalProducts: 0,
-    totalCategories: 0,
     totalOrders: 0,
-    totalRevenue: 0
+    totalRevenue: 0,
+    totalCategories: 0
   };
 
-  recentProducts: Product[] = [];
-  featuredProducts: Product[] = [];
-  categories: Category[] = [];
-  topSellingProducts: Product[] = [];
-  slowMovingProducts: Product[] = [];
-  productsForPromotion: Product[] = [];
-
-  isLoading = true;
-  currentUser: AdminUser | null = null;
+  recentProducts: any[] = [];
+  featuredProducts: any[] = [];
+  categories: any[] = [];
+  topSellingProducts: any[] = [];
+  slowMovingProducts: any[] = [];
+  productsForPromotion: any[] = [];
 
   constructor(
     private productsService: ProductsService,
@@ -41,8 +38,8 @@ export class DashboardComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    this.loadDashboardData();
     this.loadCurrentUser();
+    this.loadDashboardData();
   }
 
   loadCurrentUser(): void {
@@ -54,22 +51,22 @@ export class DashboardComponent implements OnInit {
     this.isLoading = true;
 
     // Load products and orders for analytics
-    this.productsService.getProducts().subscribe(products => {
-      this.stats.totalProducts = products.length;
-      this.recentProducts = products.slice(0, 5);
+    this.productsService.getProducts().subscribe((response: any) => {
+      this.stats.totalProducts = response.data.length;
+      this.recentProducts = response.data.slice(0, 5);
       
-      this.ordersService.getOrders().subscribe(orders => {
-        this.generateProductAnalytics(products, orders);
+      this.ordersService.getOrders().subscribe((orders: any) => {
+        this.generateProductAnalytics(response.data, orders);
       });
     });
 
     // Load featured products
-    this.productsService.getFeaturedProducts().subscribe(products => {
+    this.productsService.getFeaturedProducts().subscribe((products: any) => {
       this.featuredProducts = products.slice(0, 4);
     });
 
     // Load categories
-    this.categoriesService.getCategories().subscribe(categories => {
+    this.categoriesService.getCategories().subscribe((categories: any) => {
       this.stats.totalCategories = categories.length;
       this.categories = categories.slice(0, 5);
     });
@@ -83,63 +80,63 @@ export class DashboardComponent implements OnInit {
     }, 1000);
   }
 
-  generateProductAnalytics(products: Product[], orders: Order[]): void {
+  generateProductAnalytics(products: any[], orders: any[]): void {
     const productSales = new Map<string, { sales: number; lastSold: Date }>();
 
     // تحليل المبيعات
-    orders.forEach(order => {
-      order.items.forEach(item => {
-        const product = products.find(p => p.id === item.productId);
+    orders.forEach((order: any) => {
+      order.items.forEach((item: any) => {
+        const product = products.find((p: any) => p._id === item.productId);
         if (product) {
-          const existing = productSales.get(product.id) || { sales: 0, lastSold: new Date(0) };
+          const existing = productSales.get(product._id) || { sales: 0, lastSold: new Date(0) };
           existing.sales += item.quantity;
           if (new Date(order.createdAt) > existing.lastSold) {
             existing.lastSold = new Date(order.createdAt);
           }
-          productSales.set(product.id, existing);
+          productSales.set(product._id, existing);
         }
       });
     });
 
     // المنتجات الأكثر مبيعاً
     this.topSellingProducts = products
-      .map(product => ({
+      .map((product: any) => ({
         product,
-        sales: productSales.get(product.id)?.sales || 0,
-        lastSold: productSales.get(product.id)?.lastSold || new Date(0)
+        sales: productSales.get(product._id)?.sales || 0,
+        lastSold: productSales.get(product._id)?.lastSold || new Date(0)
       }))
-      .filter(p => p.sales > 0)
-      .sort((a, b) => b.sales - a.sales)
+      .filter((p: any) => p.sales > 0)
+      .sort((a: any, b: any) => b.sales - a.sales)
       .slice(0, 5)
-      .map(p => p.product);
+      .map((p: any) => p.product);
 
     // المنتجات بطيئة الحركة
     this.slowMovingProducts = products
-      .map(product => ({
+      .map((product: any) => ({
         product,
-        sales: productSales.get(product.id)?.sales || 0,
-        lastSold: productSales.get(product.id)?.lastSold || new Date(0)
+        sales: productSales.get(product._id)?.sales || 0,
+        lastSold: productSales.get(product._id)?.lastSold || new Date(0)
       }))
-      .filter(p => {
+      .filter((p: any) => {
         const daysSinceLastSale = p.lastSold.getTime() > 0 
           ? Math.floor((Date.now() - p.lastSold.getTime()) / (1000 * 60 * 60 * 24))
           : 999;
         return daysSinceLastSale > 30;
       })
-      .sort((a, b) => b.lastSold.getTime() - a.lastSold.getTime())
+      .sort((a: any, b: any) => b.lastSold.getTime() - a.lastSold.getTime())
       .slice(0, 5)
-      .map(p => p.product);
+      .map((p: any) => p.product);
 
     // المنتجات المناسبة للعروض
     this.productsForPromotion = products
-      .map(product => ({
+      .map((product: any) => ({
         product,
-        sales: productSales.get(product.id)?.sales || 0
+        sales: productSales.get(product._id)?.sales || 0
       }))
-      .filter(p => p.product.stock > 10 && p.sales < 5)
-      .sort((a, b) => b.product.stock - a.product.stock)
+      .filter((p: any) => p.product.stock > 10 && p.sales < 5)
+      .sort((a: any, b: any) => b.product.stock - a.product.stock)
       .slice(0, 5)
-      .map(p => p.product);
+      .map((p: any) => p.product);
   }
 
   getStatusColor(status: string): string {
@@ -156,16 +153,13 @@ export class DashboardComponent implements OnInit {
   getCategoryNameAr(category: string): string {
     const categoryNames: { [key: string]: string } = {
       'Cleaners': 'منظفات',
-      'Household Tools': 'أدوات منزلية'
+      'Household Tools': 'أدوات منزلية',
+      'Electronics': 'إلكترونيات',
+      'Clothing': 'ملابس',
+      'Books': 'كتب',
+      'Home & Garden': 'المنزل والحديقة',
+      'Sports': 'رياضة'
     };
     return categoryNames[category] || category;
-  }
-
-  calculateDiscountedPrice(product: Product): number {
-    if (product.isOnSale && product.discountPercentage && product.discountPercentage > 0) {
-      const discount = product.price * (product.discountPercentage / 100);
-      return product.price - discount;
-    }
-    return product.price;
   }
 }

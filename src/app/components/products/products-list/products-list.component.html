@@ -1,165 +1,289 @@
-<div class="p-6">
-  <!-- Header -->
-  <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-6">
-    <div>
-      <h1 class="text-2xl font-bold text-gray-900">المنتجات</h1>
-      <p class="text-sm text-gray-600">إدارة جميع منتجات المتجر</p>
-    </div>
-    <button
-      (click)="addProduct()"
-      class="mt-4 sm:mt-0 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors flex items-center"
-    >
-      <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
-      </svg>
-      إضافة منتج جديد
-    </button>
-  </div>
-
-  <!-- Filters -->
-  <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-      <!-- Search -->
-      <div>
-        <label class="block text-sm font-medium text-gray-700 mb-2">البحث</label>
-        <input
-          type="text"
-          [(ngModel)]="searchTerm"
-          (input)="onSearchChange()"
-          placeholder="البحث في المنتجات..."
-          class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+<div class="min-h-screen bg-gray-50 py-8">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    
+    <!-- Header -->
+    <div class="mb-8">
+      <div class="flex items-center justify-between mb-5" style="margin-bottom: 30px;">
+        <div>
+          <h1 class="text-3xl font-bold text-gray-900">المنتجات</h1>
+          <p *ngIf="currentSubcategory" class="text-gray-600 mt-2">
+            عرض المنتجات في: <span class="font-semibold text-blue-600">{{ subcategoryName }}</span>
+          </p>
+        </div>
+        
+       <div class="flex items-center space-x-4 gap-3">
+        <div class="flex items-center space-x-4 gap-3">
+          <button
+            *ngIf="isSubcategoryView()"
+            (click)="router.navigate(['/categories'])"
+            class="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors"
+          >
+            العودة للأصناف
+          </button>
+        </div>
+            <!-- Products Count and Add Button -->
+      <div class="flex items-center justify-between" style="margin-inline-start: 10px;">
+  
+        
+        <button
+          (click)="addNewProduct()"
+          class="bg-blue-600 hover:bg-blue-700  px-6 py-3 rounded-lg 
+          transition-colors duration-200 flex items-center space-x-2 shadow-lg hover:shadow-xl"
         >
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+          </svg>
+          <span class="font-medium">إضافة منتج جديد</span>
+        </button>
       </div>
-
-      <!-- Category Filter -->
-      <div>
-        <label class="block text-sm font-medium text-gray-700 mb-2">الصنف</label>
-        <select
-          [(ngModel)]="selectedCategory"
-          (change)="onCategoryChange()"
-          class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-        >
-                  <option value="">جميع الأصناف</option>
-        <option *ngFor="let category of getCategories()" [value]="category">{{ getCategoryNameAr(category) }}</option>
-        </select>
-      </div>
-
-      <!-- Sort -->
-      <div>
-        <label class="block text-sm font-medium text-gray-700 mb-2">الترتيب</label>
-        <select
-          [(ngModel)]="sortBy"
-          (change)="onSortChange()"
-          class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-        >
-          <option value="name">الاسم</option>
-          <option value="price">السعر</option>
-          <option value="rating">التقييم</option>
-          <option value="stock">المخزون</option>
-        </select>
       </div>
     </div>
-  </div>
 
-  <!-- Loading State -->
-  <div *ngIf="isLoading" class="flex items-center justify-center h-64">
-    <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
-  </div>
+    <!-- Loading State -->
+    <div *ngIf="isLoading" class="flex items-center justify-center h-64">
+      <div class="flex flex-col items-center space-y-4">
+        <div class="w-16 h-16 border-4 border-blue-200 border-t-blue-600 rounded-full animate-spin"></div>
+        <p class="text-gray-600 font-medium">جاري تحميل المنتجات...</p>
+      </div>
+    </div>
 
-  <!-- Products Grid -->
-  <div *ngIf="!isLoading" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-    <div *ngFor="let product of filteredProducts" class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden hover:shadow-md transition-shadow">
-      <!-- Product Image -->
-      <div class="relative">
-        <img [src]="product.images[0]" [alt]="product.name" class="w-full h-48 object-cover">
-        <div class="absolute top-2 right-2">
-          <span [class]="getStatusBadge(product).class + ' px-2 py-1 rounded-full text-xs font-medium'">
-            {{ getStatusBadge(product).text }}
-          </span>
+    <!-- Error State -->
+    <div *ngIf="error && !isLoading" class="bg-red-50 border border-red-200 rounded-lg p-6 text-center">
+      <div class="flex flex-col items-center space-y-3">
+        <svg class="w-12 h-12 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z"></path>
+        </svg>
+        <h3 class="text-lg font-medium text-red-800">حدث خطأ</h3>
+        <p class="text-red-600">{{ error }}</p>
+        <button
+          (click)="loadProducts()"
+          class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg transition-colors duration-200"
+        >
+          إعادة المحاولة
+        </button>
+      </div>
+    </div>
+
+    <!-- Filters Section -->
+    <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
+      
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <!-- Subcategory Filter -->
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-2">التصنيف الفرعي</label>
+          <select
+            [(ngModel)]="filters.subcategory"
+            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+          >
+            <option value="">اختر التصنيف الفرعي</option>
+            <option *ngFor="let subcategory of subCategories" [value]="subcategory.id" class="text-gray-900 py-2">
+              {{ subcategory.name }}
+            </option>
+          </select>
         </div>
-        <div *ngIf="product.discount" class="absolute top-2 left-2">
-          <span class="bg-red-500 text-white px-2 py-1 rounded-full text-xs font-medium">
-            {{ product.discount }}% خصم
-          </span>
+
+
+
+
+
+
+
+
+
+        <!-- Product Type Filter -->
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-2">نوع المنتج</label>
+          <select 
+            [(ngModel)]="filters.productType"
+            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+          >
+            <option value="">--</option>
+            <option value="normal">عادي</option>
+            <option value="featured">مميز</option>
+            <option value="bestSeller">الأكثر مبيعاً</option>
+            <option value="specialOffer">عرض خاص</option>
+          </select>
         </div>
+
+
       </div>
 
-      <!-- Product Info -->
-      <div class="p-4">
-        <h3 class="text-lg font-semibold text-gray-900 mb-1">{{ product.nameAr }}</h3>
-
-        <p class="text-sm text-gray-500 mb-3 line-clamp-2">{{ product.descriptionAr }}</p>
-
-        <!-- Price -->
-        <div class="flex items-center mb-3">
-          <span class="text-lg font-bold text-gray-900">{{ product.price | currency:'EGP' }}</span>
-          <span *ngIf="product.originalPrice" class="text-sm text-gray-500 line-through mr-2">
-            {{ product.originalPrice | currency:'EGP' }}
-          </span>
-        </div>
-
-        <!-- Rating -->
-        <div class="flex items-center mb-3">
-          <div class="flex items-center">
-            <svg class="w-4 h-4 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
-              <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path>
+      <!-- Filter Actions -->
+      <div class="flex items-center justify-between mt-6">
+        <button
+          (click)="clearFilters()"
+          class="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 transition-colors"
+        >
+          مسح الفلاتر
+        </button>
+        
+        <div class="flex items-center space-x-3 space-x-reverse">
+          <button
+            (click)="applyFilters()"
+            class="px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
+          >
+            تطبيق الفلاتر
+          </button>
+          
+          <button
+            (click)="sendFiltersToAPI()"
+            class="px-6 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors flex items-center space-x-2 space-x-reverse"
+          >
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
             </svg>
-            <span class="text-sm text-gray-600 mr-1">{{ product.rating }}</span>
-            <span class="text-sm text-gray-500">({{ product.reviewsCount }})</span>
-          </div>
+            <span>بحث  </span>
+          </button>
         </div>
+      </div>
+    </div>
 
-        <!-- Stock -->
-                  <div class="flex items-center justify-between mb-4">
-            <span class="text-sm text-gray-600">المخزون: {{ product.stock }}</span>
-            <span class="text-sm text-gray-600">{{ getCategoryNameAr(product.category) }}</span>
+    <!-- Products List -->
+    <div *ngIf="!isLoading && !error" class="space-y-6">
+      
+  
+
+      <!-- Products Grid -->
+      <div *ngIf="products.length > 0" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+        <div *ngFor="let product of products; trackBy: trackByProduct" 
+             class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden transition-all duration-200 hover:shadow-md">
+          
+          <!-- Product Image -->
+          <div class="aspect-w-1 aspect-h-1 w-full img-product relative">
+            <!-- Status Badge (متوفر) - Top Right -->
+            <div class="absolute top-2 right-2 z-30">
+              <span [class]="getStatusBadgeClass(product)" 
+                    class="px-2 py-1 rounded-full text-xs font-medium">
+                {{ getStatusText(product) }}
+              </span>
+            </div>
+            
+            <!-- Left Side Badges Stack -->
+            <div class="absolute top-2 z-20" style="left: 0.5rem !important; top: 0.5rem !important;">
+              <!-- Discount Percentage Badge -->
+              <div *ngIf="product.productType === 'specialOffer' && product.discount > 0" 
+                   class="bg-red-600 text-white px-2 py-1 rounded-full text-xs font-bold shadow-md border border-red-700 mb-2">
+                {{ getDiscountPercentage(product) }}%
+              </div>
+              
+              <!-- Product Type Badge -->
+              <div *ngIf="product.productType === 'featured'" 
+                   class="bg-indigo-600 text-white px-2 py-1 rounded-full text-xs font-bold shadow-md border border-indigo-700 mb-2">
+                منتج مميز
+              </div>
+              
+              <div *ngIf="product.productType === 'bestSeller'" 
+                   class="bg-emerald-600 text-white px-2 py-1 rounded-full text-xs font-bold shadow-md border border-emerald-700 mb-2">
+                الأكثر مبيعاً
+              </div>
+            </div>
+            
+            <img 
+              [src]="getProductImage(product)" 
+              [alt]="product.nameAr || product.name"
+              (error)="onImageError($event)"
+              class="w-full h-48 object-cover"
+            >
           </div>
           
-          <!-- Sale Information -->
-          <div *ngIf="product.isOnSale && product.discountPercentage" class="mb-3">
-            <div class="flex items-center justify-between">
-              <span class="text-sm line-through text-gray-500">{{ product.price | currency:'EGP' }}</span>
-              <span class="text-sm font-bold text-red-600">{{ calculateDiscountedPrice(product) | currency:'EGP' }}</span>
+          <!-- Product Info -->
+          <div class="p-4">
+            <h3 class="text-lg font-semibold text-gray-900 mb-2">
+              {{ product.nameAr || product.name }}
+            </h3>
+            
+            <p *ngIf="product.descriptionAr || product.description" 
+               class="text-gray-600 text-sm mb-3 line-clamp-2">
+              {{ product.descriptionAr || product.description }}
+            </p>
+            
+            <!-- Product Details -->
+            <div class="space-y-2 mb-4">
+              <!-- Price Display -->
+              <div class="flex items-center justify-between">
+                <span class="text-sm text-gray-500">السعر:</span>
+                <div class="flex items-center space-x-2 space-x-reverse">
+                  <!-- Original Price (strikethrough when discounted) -->
+                  <span *ngIf="product.productType === 'specialOffer' && product.discount > 0"
+                        class="font-semibold text-gray-400 line-through text-sm">
+                    {{ getOriginalPriceText(product) }}
+                  </span>
+                  
+                  <!-- Final Price (original or discounted) -->
+                  <span class="font-semibold text-blue-600 text-lg">
+                    {{ getFinalPriceText(product) }}
+                  </span>
+                </div>
+              </div>
+              
+              <div class="flex items-center justify-between">
+                <span class="text-sm text-gray-500">المخزون:</span>
+                <span class="font-medium">{{ product.stock || 0 }}</span>
+              </div>
             </div>
-            <div class="flex items-center justify-between">
-              <span class="text-xs text-red-600 font-medium">خصم {{ product.discountPercentage }}%</span>
-              <span *ngIf="product.saleQuantity" class="text-xs text-gray-500">متوفر للعرض: {{ product.saleQuantity }}</span>
+            
+            <!-- Action Buttons -->
+            <div class="flex items-center justify-between pt-3 border-t border-gray-100">
+              <button
+                (click)="viewProductDetails(product)"
+                class="px-3 py-2 text-sm bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 transition-colors flex items-center space-x-1 space-x-reverse"
+              >
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
+                </svg>
+                <span>عرض</span>
+              </button>
+              
+              <div class="flex items-center space-x-2 space-x-reverse">
+                <button
+                  (click)="editProduct(product)"
+                  class="px-3 py-2 text-sm bg-blue-100 text-blue-700 rounded-md hover:bg-blue-200 transition-colors flex items-center space-x-1 space-x-reverse"
+                >
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+                  </svg>
+                  <span>تعديل</span>
+                </button>
+                
+                <button
+                  (click)="deleteProduct(product)"
+                  class="px-3 py-2 text-sm bg-red-100 text-red-700 rounded-md hover:bg-red-200 transition-colors flex items-center space-x-1 space-x-reverse"
+                >
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                  </svg>
+                  <span>حذف</span>
+                </button>
+              </div>
             </div>
           </div>
+        </div>
+      </div>
 
-        <!-- Actions -->
-        <div class="flex space-x-3">
-          <button
-            (click)="editProduct(product.id)"
-            class="flex-1 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium text-center"
-          >
-            تعديل
-          </button>
-          <button
-            (click)="deleteProduct(product.id)"
-            class="flex-1 bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition-colors text-sm font-medium text-center"
-          >
-            حذف
-          </button>
+      <!-- No Products -->
+      <div *ngIf="products.length === 0" class="text-center py-16">
+        <div class="max-w-md mx-auto">
+          <div class="w-20 h-20 mx-auto bg-gray-100 rounded-lg flex items-center justify-center mb-6">
+            <svg class="w-10 h-10 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7v10l8 4"></path>
+            </svg>
+          </div>
+          <h3 class="text-xl font-semibold text-gray-900 mb-3">لا توجد منتجات</h3>
+          <p class="text-gray-600">لا توجد منتجات في هذا التصنيف الفرعي</p>
         </div>
       </div>
     </div>
-  </div>
 
-  <!-- Empty State -->
-  <div *ngIf="!isLoading && filteredProducts.length === 0" class="text-center py-12">
-    <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path>
-    </svg>
-    <h3 class="mt-2 text-sm font-medium text-gray-900">لا توجد منتجات</h3>
-    <p class="mt-1 text-sm text-gray-500">ابدأ بإضافة منتج جديد</p>
-    <div class="mt-6">
-      <button
-        (click)="addProduct()"
-        class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
-      >
-        إضافة منتج جديد
-      </button>
+    <!-- Pagination -->
+    <div class="mt-8" *ngIf="!isLoading && products.length > 0 && totalPages > 1">
+      
+      <app-pagination
+        [pagination]="getPaginationInfo()"
+        [infoText]="'منتج'"
+        [maxVisiblePages]="5"
+        (pageChange)="onPageChange($event)"
+      ></app-pagination>
     </div>
   </div>
 </div>
