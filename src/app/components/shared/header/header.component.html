@@ -13,8 +13,8 @@
 
     <!-- Page Title -->
     <div class="min-w-0 flex-1 text-center lg:text-right">
-      <h1 class="text-lg sm:text-xl lg:text-2xl font-bold text-gray-900 truncate">لوحة التحكم</h1>
-      <p class="text-xs sm:text-sm text-gray-600 hidden sm:block">مرحباً بك في نظام إدارة الفتح</p>
+      <h1 class="header-title">لوحة التحكم</h1>
+      <p class="header-subtitle hidden sm:block">مرحباً بك في نظام إدارة الفتح</p>
     </div>
 
     <!-- Right Side -->
@@ -128,8 +128,8 @@
   </div>
 
   <!-- Logout Confirmation Dialog -->
-  <div *ngIf="showLogoutDialog" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-    <div class="bg-white rounded-lg p-4 sm:p-6 max-w-sm w-full" style="background-color: #efefef;padding: 20px;">
+  <div *ngIf="showLogoutDialog" class="logout-overlay">
+    <div class="logout-dialog">
       <div class="flex items-center mb-4 sm:mb-6">
         <div class="w-8 h-8 sm:w-10 sm:h-10 bg-red-100 rounded-full flex items-center justify-center ml-3 sm:ml-4">
           <svg class="w-5 h-5 sm:w-6 sm:h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
