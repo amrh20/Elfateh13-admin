@@ -25,8 +25,8 @@ export class ProductFormComponent implements OnInit {
     priceAfterDiscount: 0
   };
 
-  subCategories: any=[];
-  Categories: any=[];
+  subCategories: any = [];
+  Categories: any = [];
   isSubmitting = false;
   errors: string[] = [];
   isSubcategoryPreSelected = false;
@@ -34,10 +34,10 @@ export class ProductFormComponent implements OnInit {
   productId: string | null = null;
 
   constructor(
-    private router: Router, 
+    private router: Router,
     private route: ActivatedRoute,
     private apiService: ApiService
-  ) {}
+  ) { }
 
   ngOnInit(): void {
     // Check if we're in edit mode
@@ -54,18 +54,15 @@ export class ProductFormComponent implements OnInit {
       if (subcategoryId) {
         this.isSubcategoryPreSelected = true;
         this.product.subcategory = subcategoryId;
-        console.log('Pre-selected subcategory:', subcategoryId);
       }
     });
 
     // Load categories
     this.getCategories().subscribe((data) => {
       this.Categories = data;
-      console.log(this.Categories);
-      
+
       // Extract all subcategories into one array
       this.subCategories = this.extractAllSubcategories(data);
-      console.log('All subcategories:', this.subCategories);
     });
   }
 
@@ -86,7 +83,7 @@ export class ProductFormComponent implements OnInit {
 
   extractAllSubcategories(categories: any[]): any[] {
     const allSubcategories: any[] = [];
-    
+
     categories.forEach(category => {
       if (category.subcategories && Array.isArray(category.subcategories)) {
         category.subcategories.forEach((subcategory: any) => {
@@ -100,7 +97,7 @@ export class ProductFormComponent implements OnInit {
         });
       }
     });
-    
+
     return allSubcategories;
   }
 
@@ -137,15 +134,22 @@ export class ProductFormComponent implements OnInit {
   private loadProductFromAPI(): void {
     if (!this.productId) return;
     
-    // You can implement API call here if needed
-    console.log('Loading product from API:', this.productId);
+    this.apiService.get(`/products/${this.productId}`).subscribe({
+      next: (response: any) => {
+        const productData = response.data || response;
+        this.populateFormWithProduct(productData);
+      },
+      error: (error: any) => {
+        console.error('Error loading product:', error);
+        // يمكن إضافة رسالة خطأ للمستخدم هنا
+      }
+    });
   }
-  
+
 
 
   onProductTypeChange(): void {
-    console.log('Product type changed to:', this.product.productType);
-    
+
     // Reset discount values when not special offer
     if (this.product.productType !== 'specialOffer') {
       this.product.discount = 0;
@@ -155,8 +159,7 @@ export class ProductFormComponent implements OnInit {
 
   validateForm(): boolean {
     this.errors = [];
-    
-    console.log('Validating form with product data:', this.product);
+
 
     if (!this.product.name.trim()) {
       this.errors.push('اسم المنتج مطلوب');
@@ -170,7 +173,6 @@ export class ProductFormComponent implements OnInit {
       this.errors.push('السعر يجب أن يكون أكبر من صفر');
     }
 
-    console.log('Checking subcategory:', this.product.subcategory, 'Type:', typeof this.product.subcategory);
     if (!this.product.subcategory || this.product.subcategory === '') {
       this.errors.push('الصنف الفرعي مطلوب');
     }
@@ -192,7 +194,6 @@ export class ProductFormComponent implements OnInit {
       }
     }
 
-    console.log('Validation errors:', this.errors);
     return this.errors.length === 0;
   }
 
@@ -203,11 +204,10 @@ export class ProductFormComponent implements OnInit {
     }
 
     this.isSubmitting = true;
-    
+
     // Prepare the product data according to API structure
     const productData = this.prepareProductData();
-    console.log('Product data to send:', productData);
-    
+
     // Call API to create or update product
     if (this.isEditMode) {
       this.updateProduct(productData);
@@ -219,7 +219,7 @@ export class ProductFormComponent implements OnInit {
   prepareProductData(): any {
     // Filter out empty image URLs
     const filteredImages = this.product.images.filter(img => img.trim() !== '');
-    
+
     return {
       name: this.product.name,
       description: this.product.description,
@@ -236,10 +236,9 @@ export class ProductFormComponent implements OnInit {
   createProduct(productData: any): void {
     this.apiService.post('/products', productData).subscribe({
       next: (response: any) => {
-        console.log('Product created successfully:', response);
         this.isSubmitting = false;
         this.showSuccessPopup();
-        
+
         // Smart redirect based on where user came from
         if (this.isSubcategoryPreSelected) {
           // Redirect back to the specific subcategory page
@@ -261,13 +260,12 @@ export class ProductFormComponent implements OnInit {
 
   updateProduct(productData: any): void {
     if (!this.productId) return;
-    
+
     this.apiService.put(`/products/${this.productId}`, productData).subscribe({
       next: (response: any) => {
-        console.log('Product updated successfully:', response);
         this.isSubmitting = false;
         this.showSuccessPopup();
-        
+
         // Redirect back to product details
         this.router.navigate(['/products', this.productId]);
       },
@@ -294,9 +292,9 @@ export class ProductFormComponent implements OnInit {
   }
 
   cancel(): void {
-    if (this.product.images.some(img => img.trim() !== '') || 
-        this.product.name || 
-        this.product.description) {
+    if (this.product.images.some(img => img.trim() !== '') ||
+      this.product.name ||
+      this.product.description) {
       if (confirm('هل أنت متأكد من إلغاء التغييرات؟')) {
         this.router.navigate(['/products']);
       }
@@ -313,7 +311,6 @@ export class ProductFormComponent implements OnInit {
   }
 
   onSubcategoryChange(): void {
-    console.log('Subcategory changed to:', this.product.subcategory);
     // You can add any additional logic here when subcategory changes
   }
 
@@ -328,7 +325,7 @@ export class ProductFormComponent implements OnInit {
 
   getDiscountInputClass(): string {
     const baseClass = 'w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent';
-    
+
     if (this.product.discount >= this.product.price) {
       return baseClass + ' border-red-300 focus:ring-red-500 focus:border-red-500';
     } else if (this.product.discount > 0) {
@@ -340,7 +337,7 @@ export class ProductFormComponent implements OnInit {
 
   getSubcategorySelectClass(): string {
     const baseClass = 'w-full px-4 py-3 border rounded-lg transition-all duration-200';
-    
+
     if (this.isSubcategoryPreSelected) {
       return baseClass + ' border-gray-300 bg-gray-100 text-gray-500 cursor-not-allowed';
     } else {
