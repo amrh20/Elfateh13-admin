@@ -1,23 +1,25 @@
-<div class="min-h-screen bg-gray-50">
+<div class="app-container">
   <!-- Login Page -->
-  <div *ngIf="!(currentUser$ | async)">
+  <div *ngIf="!(currentUser$ | async)" class="login-container">
     <router-outlet></router-outlet>
   </div>
 
   <!-- Dashboard Layout -->
-  <div *ngIf="currentUser$ | async" class="flex h-screen">
+  <div *ngIf="currentUser$ | async" class="dashboard-layout">
     <!-- Sidebar -->
-    <div class="flex-shrink-0">
+    <div class="sidebar-container">
       <app-sidebar></app-sidebar>
     </div>
 
     <!-- Main Content -->
-    <div class="flex-1 flex flex-col overflow-hidden">
+    <div class="main-content">
       <!-- Header -->
-      <app-header></app-header>
+      <div class="header-container">
+        <app-header></app-header>
+      </div>
 
       <!-- Page Content -->
-      <main class="flex-1 overflow-y-auto bg-gray-50">
+      <main class="page-content">
         <router-outlet></router-outlet>
       </main>
     </div>

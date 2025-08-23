@@ -75,6 +75,13 @@ export class HeaderComponent implements OnInit {
     this.showNotifications = !this.showNotifications;
   }
 
+  toggleMobileMenu(): void {
+    // Emit event to parent component to toggle sidebar
+    // This will be handled by the app component
+    const event = new CustomEvent('toggleMobileMenu');
+    window.dispatchEvent(event);
+  }
+
   markAllAsRead(): void {
     this.recentNotifications.forEach(notification => {
       notification.isRead = true;

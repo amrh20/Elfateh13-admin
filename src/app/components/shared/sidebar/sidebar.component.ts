@@ -17,6 +17,7 @@ interface MenuItem {
 })
 export class SidebarComponent implements OnInit {
   isCollapsed = false;
+  isMobile = false;
   menuItems: MenuItem[] = [
     {
       title: 'لوحة التحكم',
@@ -48,19 +49,45 @@ export class SidebarComponent implements OnInit {
     //   route: '/reports',
     //   icon: 'reports'
     // },
-    {
-      title: 'الإعدادات',
-      route: '/settings',
-      icon: 'settings'
-    }
+    // {
+    //   title: 'الإعدادات',
+    //   route: '/settings',
+    //   icon: 'settings'
+    // }
   ];
 
-  constructor() {}
+  constructor() { }
 
-  ngOnInit(): void {}
+  ngOnInit(): void {
+    this.checkScreenSize();
+    // Listen for window resize events
+    window.addEventListener('resize', () => {
+      this.checkScreenSize();
+    });
+
+    // Listen for mobile menu toggle events
+    window.addEventListener('toggleSidebar', () => {
+      this.toggleSidebar();
+    });
+  }
+
+  private checkScreenSize(): void {
+    this.isMobile = window.innerWidth < 1024;
+    // Auto-collapse on mobile by default
+    if (this.isMobile) {
+      this.isCollapsed = true;
+    }
+  }
 
   toggleSidebar(): void {
     this.isCollapsed = !this.isCollapsed;
+  }
+
+  onMenuItemClick(): void {
+    // Auto-close sidebar on mobile when a menu item is clicked
+    if (this.isMobile) {
+      this.isCollapsed = true;
+    }
   }
 
   getIconPath(icon: string): string {

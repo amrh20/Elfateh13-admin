@@ -297,3 +297,84 @@
   color: white;
   box-shadow: 0 10px 15px -3px rgba(239, 68, 68, 0.3);
 }
+
+// Action buttons container
+.action-buttons-container {
+  display: flex !important;
+  flex-direction: column;
+  gap: 0.75rem;
+  width: 100%;
+  
+  @media (min-width: 640px) {
+    flex-direction: row;
+    gap: 1rem;
+    width: auto;
+  }
+}
+
+// Base action button styling
+.action-btn {
+  display: flex !important;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  border-radius: 0.75rem;
+  font-weight: 500;
+  transition: all 0.2s ease;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  border: none;
+  cursor: pointer;
+  white-space: nowrap;
+  
+  @media (min-width: 640px) {
+    padding: 0.75rem 1.5rem;
+  }
+  
+  &:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+  }
+  
+  &:active {
+    transform: translateY(0);
+  }
+  
+  svg {
+    flex-shrink: 0;
+  }
+  
+  span {
+    font-weight: 500;
+  }
+}
+
+// Edit button (green)
+.edit-btn {
+  background-color: #10b981 !important;
+  color: #ffffff !important;
+  
+  &:hover {
+    background-color: #059669 !important;
+  }
+  
+  &:focus {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.2);
+  }
+}
+
+// Delete button (red)
+.delete-btn {
+  background-color: #ef4444 !important;
+  color: #ffffff !important;
+  
+  &:hover {
+    background-color: #dc2626 !important;
+  }
+  
+  &:focus {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.2);
+  }
+}
