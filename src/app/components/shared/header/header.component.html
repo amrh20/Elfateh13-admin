@@ -1,13 +1,24 @@
-<header class="bg-white shadow-sm border-b border-gray-200 px-6 py-4">
+<header class="bg-white shadow-sm border-b border-gray-200 px-4 sm:px-6 py-3 sm:py-4">
   <div class="flex items-center justify-between">
+    <!-- Mobile Menu Button -->
+    <button 
+      (click)="toggleMobileMenu()"
+      class="lg:hidden p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors"
+      title="القائمة"
+    >
+      <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+      </svg>
+    </button>
+
     <!-- Page Title -->
-    <div>
-      <h1 class="text-2xl font-bold text-gray-900">لوحة التحكم</h1>
-      <p class="text-sm text-gray-600">مرحباً بك في نظام إدارة الفتح</p>
+    <div class="min-w-0 flex-1 text-center lg:text-right">
+      <h1 class="text-lg sm:text-xl lg:text-2xl font-bold text-gray-900 truncate">لوحة التحكم</h1>
+      <p class="text-xs sm:text-sm text-gray-600 hidden sm:block">مرحباً بك في نظام إدارة الفتح</p>
     </div>
 
     <!-- Right Side -->
-    <div class="flex items-center space-x-4">
+    <div class="flex items-center space-x-2 sm:space-x-4 space-x-reverse">
       <!-- Notifications Dropdown -->
       <div class="relative">
         <button 
@@ -26,7 +37,7 @@
 
         <!-- Notifications Dropdown Menu -->
         <div *ngIf="showNotifications" 
-             class="absolute left-0 mt-2 w-80 bg-white rounded-lg shadow-lg border border-gray-200 z-50 max-h-96 overflow-y-auto notifications-dropdown">
+             class="absolute left-0 mt-2 w-72 sm:w-80 bg-white rounded-lg shadow-lg border border-gray-200 z-50 max-h-80 sm:max-h-96 overflow-y-auto notifications-dropdown">
           <div class="p-4 border-b border-gray-200">
             <div class="flex items-center justify-between">
               <h3 class="text-lg font-semibold text-gray-900">الإشعارات</h3>
@@ -93,22 +104,22 @@
       </div>
 
       <!-- User Menu -->
-      <div class="flex items-center space-x-3">
-        <div class="text-right">
-          <p class="text-sm font-medium text-gray-900">{{ currentUser?.username || 'المدير' }}</p>
-          <p class="text-xs text-gray-500">{{ currentUser?.email || 'admin@example.com' }}</p>
+      <div class="flex items-center space-x-2 sm:space-x-3 space-x-reverse">
+        <div class="text-right hidden sm:block">
+          <p class="text-sm font-medium text-gray-900 truncate">{{ currentUser?.username || 'المدير' }}</p>
+          <p class="text-xs text-gray-500 truncate">{{ currentUser?.email || 'admin@example.com' }}</p>
         </div>
-        <div class="w-8 h-8 bg-gray-300 rounded-full flex items-center justify-center">
-          <svg class="w-4 h-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <div class="w-8 h-8 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-full flex items-center justify-center">
+          <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
           </svg>
         </div>
         <button
           (click)="showLogoutConfirmation()"
-          class="p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors"
+          class="p-1.5 sm:p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors"
           title="تسجيل الخروج"
         >
-          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg class="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path>
           </svg>
         </button>
@@ -117,29 +128,29 @@
   </div>
 
   <!-- Logout Confirmation Dialog -->
-  <div *ngIf="showLogoutDialog" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-    <div class="bg-white rounded-lg p-6 max-w-sm w-full mx-4">
-      <div class="flex items-center mb-6">
-        <div class="w-10 h-10 bg-red-100 rounded-full flex items-center justify-center ml-4">
-          <svg class="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+  <div *ngIf="showLogoutDialog" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+    <div class="bg-white rounded-lg p-4 sm:p-6 max-w-sm w-full" style="background-color: #efefef;padding: 20px;">
+      <div class="flex items-center mb-4 sm:mb-6">
+        <div class="w-8 h-8 sm:w-10 sm:h-10 bg-red-100 rounded-full flex items-center justify-center ml-3 sm:ml-4">
+          <svg class="w-5 h-5 sm:w-6 sm:h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z"></path>
           </svg>
         </div>
-        <h3 class="text-lg font-semibold text-gray-900">تأكيد تسجيل الخروج</h3>
+        <h3 class="text-base sm:text-lg font-semibold text-gray-900">تأكيد تسجيل الخروج</h3>
       </div>
       
-      <p class="text-gray-600 mb-8">هل أنت متأكد من أنك تريد تسجيل الخروج؟</p>
+      <p class="text-gray-600 mb-6 sm:mb-8 text-sm sm:text-base">هل أنت متأكد من أنك تريد تسجيل الخروج؟</p>
       
-      <div class="flex space-x-4 rtl:space-x-reverse gap-3">
+      <div class="flex flex-col sm:flex-row gap-3">
         <button
           (click)="cancelLogout()"
-          class="flex-1 px-6 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors text-center font-medium"
+          class="flex-1 px-4 sm:px-6 py-2 sm:py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors text-center font-medium"
         >
           إلغاء
         </button>
         <button
           (click)="confirmLogout()"
-          class="flex-1 px-6 py-3 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors text-center font-medium"
+          class="flex-1 px-4 sm:px-6 py-2 sm:py-3 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors text-center font-medium"
         >
           تسجيل الخروج
         </button>

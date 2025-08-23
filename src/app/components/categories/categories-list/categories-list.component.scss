@@ -268,6 +268,208 @@
   padding: 0.25rem 0.75rem; /* 4px 12px */
 }
 
+// Search and Add section
+.search-add-section {
+  display: flex !important;
+  flex-direction: column;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+  
+  @media (min-width: 1024px) {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    gap: 2rem;
+  }
+}
+
+// Search container
+.search-container {
+  width: 100%;
+  
+  @media (min-width: 1024px) {
+    flex: 1;
+    max-width: 500px;
+  }
+}
+
+// Search input styling
+.search-input {
+  display: block;
+  width: 100%;
+  padding: 0.75rem 2.5rem 0.75rem 1rem;
+  border: 1px solid #d1d5db;
+  border-radius: 0.5rem;
+  background-color: #ffffff;
+  color: #374151;
+  font-size: 1rem;
+  line-height: 1.5;
+  transition: all 0.2s ease;
+  
+  &::placeholder {
+    color: #6b7280;
+  }
+  
+  &:focus {
+    outline: none;
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+  }
+}
+
+// Clear search button
+.clear-search-btn {
+  position: absolute;
+  inset-y: 0;
+  left: 0;
+  padding-left: 0.75rem;
+  display: flex;
+  align-items: center;
+  color: #9ca3af;
+  transition: color 0.2s ease;
+  
+  &:hover {
+    color: #4b5563;
+  }
+}
+
+// Add button container
+.add-button-container {
+  width: 100%;
+  
+  @media (min-width: 1024px) {
+    width: auto;
+  }
+}
+
+// Add category button
+.add-category-btn {
+  display: flex !important;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  width: 100%;
+  padding: 0.75rem 1.5rem;
+  background: linear-gradient(135deg, #2563eb, #7c3aed);
+  color: #ffffff;
+  border: none;
+  border-radius: 0.75rem;
+  font-weight: 500;
+  font-size: 1rem;
+  transition: all 0.2s ease;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  cursor: pointer;
+  
+  @media (min-width: 1024px) {
+    width: auto;
+    padding: 0.875rem 2rem;
+  }
+  
+  &:hover {
+    background: linear-gradient(135deg, #1d4ed8, #6d28d9);
+    transform: translateY(-1px);
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+  }
+  
+  &:active {
+    transform: translateY(0);
+  }
+  
+  svg {
+    flex-shrink: 0;
+  }
+  
+  span {
+    font-weight: 500;
+    white-space: nowrap;
+  }
+}
+
+// Add subcategory button
+.add-subcategory-btn {
+  display: flex !important;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  width: 100%;
+  padding: 0.75rem 1rem;
+  background: linear-gradient(135deg, #f3f4f6, #e5e7eb);
+  color: #374151;
+  border: 1px solid #d1d5db;
+  border-radius: 0.5rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  transition: all 0.2s ease;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  cursor: pointer;
+  
+  @media (min-width: 640px) {
+    width: auto;
+    padding: 0.5rem 1rem;
+  }
+  
+  &:hover {
+    background: linear-gradient(135deg, #e5e7eb, #d1d5db);
+    border-color: #9ca3af;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+  }
+  
+  &:active {
+    transform: translateY(0);
+  }
+  
+  svg {
+    flex-shrink: 0;
+    color: #6b7280;
+  }
+  
+  span {
+    font-weight: 500;
+    white-space: nowrap;
+    color: #374151;
+  }
+}
+
+// Subcategories grid spacing
+.subcategories-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+// Subcategory item styling
+.subcategory-item {
+  background: #ffffff;
+  border-radius: 0.5rem;
+  padding: 1rem;
+  border: 1px solid #e5e7eb;
+  transition: all 0.2s ease;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  
+  &:hover {
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    border-color: #d1d5db;
+    transform: translateY(-1px);
+  }
+}
+
+// Fix for action buttons spacing
+.subcategory-item .flex.items-center.gap-1 {
+  gap: 0.5rem !important;
+}
+
+// Ensure proper spacing in subcategory content
+.subcategory-item .flex.flex-col.sm\\:flex-row.sm\\:items-center.gap-3 {
+  gap: 0.75rem !important;
+}
+
+// Fix spacing for subcategory info section
+.subcategory-item .flex.items-center.gap-3.min-w-0.flex-1 {
+  gap: 0.75rem !important;
+}
+
 .status-badge::before {
   content: '';
   position: absolute;

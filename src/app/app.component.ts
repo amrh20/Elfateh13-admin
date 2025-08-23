@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterOutlet } from '@angular/router';
 import { AuthService } from './services/auth.service';
@@ -12,10 +12,23 @@ import { HeaderComponent } from './components/shared/header/header.component';
   templateUrl: './app.component.html',
   styleUrl: './app.component.scss'
 })
-export class AppComponent {
+export class AppComponent implements OnInit {
   title = 'admin-dashboard';
   
   constructor(private authService: AuthService) {}
+  
+  ngOnInit(): void {
+    // Listen for mobile menu toggle events
+    window.addEventListener('toggleMobileMenu', () => {
+      this.toggleMobileSidebar();
+    });
+  }
+
+  toggleMobileSidebar(): void {
+    // This will be handled by the sidebar component
+    const event = new CustomEvent('toggleSidebar');
+    window.dispatchEvent(event);
+  }
   
   get currentUser$() {
     return this.authService.currentUser$;
