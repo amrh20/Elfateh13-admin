@@ -24,6 +24,8 @@ export class HeaderComponent implements OnInit {
   unreadCount = 3;
   showLogoutDialog = false;
   currentUser: AdminUser | null = null;
+  isMenuToggling = false;
+  isMobileMenuOpen = false;
   
   recentNotifications: Notification[] = [
     {
@@ -60,6 +62,11 @@ export class HeaderComponent implements OnInit {
   ngOnInit(): void {
     this.updateUnreadCount();
     this.loadCurrentUser();
+    
+    // Listen for sidebar state changes
+    window.addEventListener('sidebarStateChanged', (event: any) => {
+      this.isMobileMenuOpen = !event.detail.isCollapsed;
+    });
   }
 
   loadCurrentUser(): void {
@@ -76,10 +83,27 @@ export class HeaderComponent implements OnInit {
   }
 
   toggleMobileMenu(): void {
+    // Prevent multiple rapid clicks
+    if (this.isMenuToggling) return;
+    
+    this.isMenuToggling = true;
+    
+    // Toggle the menu state immediately for smooth UI
+    this.isMobileMenuOpen = !this.isMobileMenuOpen;
+    
     // Emit event to parent component to toggle sidebar
-    // This will be handled by the app component
-    const event = new CustomEvent('toggleMobileMenu');
+    const event = new CustomEvent('toggleMobileMenu', {
+      detail: { 
+        timestamp: Date.now(),
+        isOpen: this.isMobileMenuOpen
+      }
+    });
     window.dispatchEvent(event);
+    
+    // Reset flag after a short delay
+    setTimeout(() => {
+      this.isMenuToggling = false;
+    }, 200);
   }
 
   markAllAsRead(): void {
