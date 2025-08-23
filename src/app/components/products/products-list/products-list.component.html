@@ -134,7 +134,7 @@
     
   
         <!-- Products Grid -->
-        <div *ngIf="products.length > 0" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">
+        <div *ngIf="products.length > 0" class="products-grid">
           <div *ngFor="let product of products; trackBy: trackByProduct" 
                class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden transition-all duration-200 hover:shadow-md">
             

@@ -1,6 +1,7 @@
 
 .product-list-container {
-
+    // Container styles
+}
 
 .bg-indigo-600 {
     background-color: #6366f1;
@@ -160,5 +161,28 @@
     position: absolute !important;
 }
 
+// Force 3 products per row - Custom CSS override
+.products-grid {
+    display: grid !important;
+    grid-template-columns: repeat(3, 1fr) !important;
+    gap: 1.5rem !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+}
 
+// Responsive adjustments for products grid
+@media (max-width: 1023px) {
+    .products-grid {
+        grid-template-columns: repeat(2, 1fr) !important;
+        gap: 1rem !important;
+    }
+}
+
+@media (max-width: 639px) {
+    .products-grid {
+        grid-template-columns: 1fr !important;
+        gap: 1rem !important;
+    }
 }
