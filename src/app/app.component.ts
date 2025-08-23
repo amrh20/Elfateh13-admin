@@ -18,8 +18,14 @@ export class AppComponent implements OnInit {
   constructor(private authService: AuthService) {}
   
   ngOnInit(): void {
-    // Listen for mobile menu toggle events
-    window.addEventListener('toggleMobileMenu', () => {
+    // Listen for mobile menu toggle events with debouncing
+    let lastToggleTime = 0;
+    window.addEventListener('toggleMobileMenu', (event: any) => {
+      const now = Date.now();
+      // Prevent rapid toggles (debounce)
+      if (now - lastToggleTime < 200) return;
+      lastToggleTime = now;
+      
       this.toggleMobileSidebar();
     });
   }

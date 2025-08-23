@@ -60,33 +60,87 @@ export class SidebarComponent implements OnInit {
 
   ngOnInit(): void {
     this.checkScreenSize();
-    // Listen for window resize events
+    
+    // Listen for window resize events with debouncing
+    let resizeTimeout: any;
     window.addEventListener('resize', () => {
-      this.checkScreenSize();
+      clearTimeout(resizeTimeout);
+      resizeTimeout = setTimeout(() => {
+        this.checkScreenSize();
+      }, 100);
     });
 
-    // Listen for mobile menu toggle events
+    // Listen for mobile menu toggle events with debouncing
+    let lastToggleTime = 0;
     window.addEventListener('toggleSidebar', () => {
+      const now = Date.now();
+      // Prevent rapid toggles
+      if (now - lastToggleTime < 150) return;
+      lastToggleTime = now;
+      
       this.toggleSidebar();
     });
   }
 
   private checkScreenSize(): void {
+    const wasMobile = this.isMobile;
     this.isMobile = window.innerWidth < 1024;
+    
     // Auto-collapse on mobile by default
     if (this.isMobile) {
       this.isCollapsed = true;
+      document.body.style.overflow = 'auto';
+    } else if (wasMobile && !this.isMobile) {
+      // When switching from mobile to desktop, reset state
+      this.isCollapsed = false;
+      document.body.style.overflow = 'auto';
     }
+    
+    // Notify header about state change
+    const stateEvent = new CustomEvent('sidebarStateChanged', {
+      detail: { 
+        isCollapsed: this.isCollapsed,
+        isMobile: this.isMobile
+      }
+    });
+    window.dispatchEvent(stateEvent);
   }
 
   toggleSidebar(): void {
+    // Add smooth animation class
     this.isCollapsed = !this.isCollapsed;
+    
+    // Force reflow for smooth animation
+    if (this.isMobile) {
+      document.body.style.overflow = this.isCollapsed ? 'auto' : 'hidden';
+    }
+    
+    // Notify header about state change
+    const stateEvent = new CustomEvent('sidebarStateChanged', {
+      detail: { 
+        isCollapsed: this.isCollapsed,
+        isMobile: this.isMobile
+      }
+    });
+    window.dispatchEvent(stateEvent);
   }
 
   onMenuItemClick(): void {
     // Auto-close sidebar on mobile when a menu item is clicked
     if (this.isMobile) {
       this.isCollapsed = true;
+      
+      // Notify header about state change
+      const stateEvent = new CustomEvent('sidebarStateChanged', {
+        detail: { 
+          isCollapsed: this.isCollapsed,
+          isMobile: this.isMobile
+        }
+      });
+      window.dispatchEvent(stateEvent);
+      
+      // Reset body overflow
+      document.body.style.overflow = 'auto';
     }
   }
 

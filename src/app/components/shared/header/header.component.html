@@ -3,11 +3,18 @@
     <!-- Mobile Menu Button -->
     <button 
       (click)="toggleMobileMenu()"
-      class="lg:hidden p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors"
-      title="القائمة"
+      class="mobile-menu-btn lg:hidden p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-all duration-200"
+      [title]="isMobileMenuOpen ? 'إغلاق القائمة' : 'فتح القائمة'"
+      type="button"
     >
-      <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <!-- Hamburger Icon when menu is closed -->
+      <svg *ngIf="!isMobileMenuOpen" class="w-6 h-6 transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+      </svg>
+      
+      <!-- Close (X) Icon when menu is open -->
+      <svg *ngIf="isMobileMenuOpen" class="w-6 h-6 transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
       </svg>
     </button>
 

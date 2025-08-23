@@ -80,6 +80,36 @@
   background: #94a3b8;
 }
 
+// Mobile menu button styling
+.mobile-menu-btn {
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+  user-select: none;
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+  
+  &:active {
+    transform: scale(0.95);
+  }
+  
+  &:focus {
+    outline: 2px solid #3b82f6;
+    outline-offset: 2px;
+  }
+  
+  // Icon transition effects
+  svg {
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    transform-origin: center;
+  }
+  
+  // Smooth icon swap animation
+  &:hover svg {
+    transform: scale(1.1);
+  }
+}
+
 // Header title styling
 .header-title {
   font-size: 1.125rem;
