@@ -140,8 +140,9 @@ export class ProductDetailsComponent implements OnInit {
   }
 
   editProduct(): void {
-    console.log(this.product);
-    this.router.navigate(['/products/edit', this.product._id || this.product.id]);
+    this.router.navigate(['/products/edit', this.product._id || this.product.id], {
+      state: { product: this.product }
+    });
   }
 
   deleteProduct(): void {
