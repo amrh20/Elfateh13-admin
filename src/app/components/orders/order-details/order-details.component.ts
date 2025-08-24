@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
+import { OrdersService } from '../../../services/orders.service';
 
 @Component({
   selector: 'app-order-details',
@@ -14,6 +15,7 @@ export class OrderDetailsComponent implements OnInit {
   orderId = '';
   order: any = null;
   isLoading = true;
+  error: string | null = null;
 
   // Modal states
   showStatusModal = false;
@@ -21,202 +23,132 @@ export class OrderDetailsComponent implements OnInit {
   showPrintModal = false;
   newOrderStatus = '';
   newPaymentStatus = '';
-  statusNotes = '';
-  paymentNotes = '';
-
-  // Mock order data
-  private mockOrders = [
-    {
-      id: '1',
-      userName: 'أحمد محمد',
-      userEmail: 'ahmed@example.com',
-      userPhone: '+201234567890',
-      totalAmount: 150.99,
-      subtotal: 140.00,
-      shipping: 10.99,
-      status: 'pending',
-      paymentStatus: 'pending',
-      paymentMethod: 'بطاقة ائتمان',
-      createdAt: new Date('2024-01-15'),
-      updatedAt: new Date('2024-01-15'),
-      shippingAddress: {
-        name: 'أحمد محمد',
-        address: '123 شارع النيل',
-        city: 'القاهرة',
-        postalCode: '12345',
-        phone: '+201234567890'
-      },
-      items: [
-        {
-          id: '1',
-          name: 'منظف أرضيات لافندر',
-          nameAr: 'منظف أرضيات لافندر',
-          price: 45.99,
-          quantity: 2,
-          total: 91.98,
-          image: '/assets/images/default-product.svg'
-        },
-        {
-          id: '2',
-          name: 'منظف المطبخ',
-          nameAr: 'منظف المطبخ',
-          price: 24.00,
-          quantity: 1,
-          total: 24.00,
-          image: '/assets/images/default-product.svg'
-        },
-        {
-          id: '3',
-          name: 'منظف الحمام',
-          nameAr: 'منظف الحمام',
-          price: 24.00,
-          quantity: 1,
-          total: 24.00,
-          image: '/assets/images/default-product.svg'
-        }
-      ],
-      notes: 'يرجى التوصيل في الصباح',
-      statusHistory: [
-        {
-          status: 'pending',
-          date: new Date('2024-01-15 10:00'),
-          note: 'تم إنشاء الطلب'
-        }
-      ]
-    },
-    {
-      id: '2',
-      userName: 'فاطمة علي',
-      userEmail: 'fatima@example.com',
-      userPhone: '+201234567891',
-      totalAmount: 89.50,
-      subtotal: 79.50,
-      shipping: 10.00,
-      status: 'delivered',
-      paymentStatus: 'paid',
-      paymentMethod: 'الدفع عند الاستلام',
-      createdAt: new Date('2024-02-20'),
-      updatedAt: new Date('2024-02-22'),
-      shippingAddress: {
-        name: 'فاطمة علي',
-        address: '456 شارع المعادي',
-        city: 'القاهرة',
-        postalCode: '67890',
-        phone: '+201234567891'
-      },
-      items: [
-        {
-          id: '4',
-          name: 'أدوات المطبخ',
-          nameAr: 'أدوات المطبخ',
-          price: 39.75,
-          quantity: 2,
-          total: 79.50,
-          image: '/assets/images/default-product.svg'
-        }
-      ],
-      notes: '',
-      statusHistory: [
-        {
-          status: 'pending',
-          date: new Date('2024-02-20 14:30'),
-          note: 'تم إنشاء الطلب'
-        },
-        {
-          status: 'confirmed',
-          date: new Date('2024-02-21 09:15'),
-          note: 'تم تأكيد الطلب'
-        },
-        {
-          status: 'shipped',
-          date: new Date('2024-02-21 16:45'),
-          note: 'تم شحن الطلب'
-        },
-        {
-          status: 'delivered',
-          date: new Date('2024-02-22 11:20'),
-          note: 'تم توصيل الطلب'
-        }
-      ]
-    },
-    {
-      id: '3',
-      userName: 'محمد حسن',
-      userEmail: 'mohamed@example.com',
-      userPhone: '+201234567892',
-      totalAmount: 245.75,
-      subtotal: 235.75,
-      shipping: 10.00,
-      status: 'confirmed',
-      paymentStatus: 'paid',
-      paymentMethod: 'بطاقة ائتمان',
-      createdAt: new Date('2024-03-10'),
-      updatedAt: new Date('2024-03-10'),
-      shippingAddress: {
-        name: 'محمد حسن',
-        address: '789 شارع الزمالك',
-        city: 'القاهرة',
-        postalCode: '11211',
-        phone: '+201234567892'
-      },
-      items: [
-        {
-          id: '5',
-          name: 'منظف الحمام',
-          nameAr: 'منظف الحمام',
-          price: 60.00,
-          quantity: 3,
-          total: 180.00,
-          image: '/assets/images/default-product.svg'
-        },
-        {
-          id: '6',
-          name: 'أدوات المطبخ',
-          nameAr: 'أدوات المطبخ',
-          price: 55.75,
-          quantity: 1,
-          total: 55.75,
-          image: '/assets/images/default-product.svg'
-        }
-      ],
-      notes: 'يرجى التوصيل في المساء',
-      statusHistory: [
-        {
-          status: 'pending',
-          date: new Date('2024-03-10 16:00'),
-          note: 'تم إنشاء الطلب'
-        },
-        {
-          status: 'confirmed',
-          date: new Date('2024-03-10 17:30'),
-          note: 'تم تأكيد الطلب'
-        }
-      ]
-    }
-  ];
 
   constructor(
     private route: ActivatedRoute,
-    private router: Router
+    private router: Router,
+    private ordersService: OrdersService
   ) {}
 
   ngOnInit(): void {
     this.orderId = this.route.snapshot.paramMap.get('id') || '';
-    this.loadOrderDetails();
+    if (this.orderId) {
+      this.loadOrderDetails();
+    } else {
+      this.error = 'معرف الطلب غير صحيح';
+      this.isLoading = false;
+    }
   }
 
   loadOrderDetails(): void {
     this.isLoading = true;
-    // Simulate API call
-    setTimeout(() => {
-      this.order = this.mockOrders.find(o => o.id === this.orderId);
-      this.isLoading = false;
-      
-      if (!this.order) {
-        alert('الطلب غير موجود');
-        this.router.navigate(['/orders']);
+    this.error = null;
+    
+    this.ordersService.getOrder(this.orderId).subscribe({
+      next: (response: any) => {
+        if (response) {
+          this.order = this.mapAPIOrderToDisplay(response);
+        } else {
+          this.error = 'لم يتم العثور على بيانات الطلب';
+        }
+        
+        this.isLoading = false;
+      },
+      error: (error: any) => {
+        this.error = 'حدث خطأ أثناء تحميل تفاصيل الطلب';
+        this.isLoading = false;
       }
-    }, 500);
+    });
+  }
+
+  /**
+   * Map API order data to display format
+   */
+  mapAPIOrderToDisplay(apiOrder: any): any {
+    return {
+      id: apiOrder._id || apiOrder.orderNumber || 'غير محدد',
+      orderNumber: apiOrder.orderNumber || 'غير محدد',
+      userName: apiOrder.customerInfo?.name || 'غير محدد',
+      userEmail: apiOrder.customerInfo?.email || 'غير محدد',
+      userPhone: apiOrder.customerInfo?.phone || 'غير محدد',
+      totalAmount: apiOrder.totalAmount || 0,
+      subtotal: this.calculateSubtotal(apiOrder.items),
+      shipping: 0, // API doesn't provide shipping cost
+      status: apiOrder.status || 'pending',
+      paymentStatus: this.getPaymentStatusFromOrder(apiOrder),
+      paymentMethod: 'بطاقة ائتمان', // Default value
+      createdAt: new Date(apiOrder.createdAt || Date.now()),
+      updatedAt: new Date(apiOrder.updatedAt || Date.now()),
+      shippingAddress: {
+        name: apiOrder.customerInfo?.name || 'غير محدد',
+        address: apiOrder.customerInfo?.address?.street || 'غير محدد',
+        city: apiOrder.customerInfo?.address?.city || 'غير محدد',
+        postalCode: 'غير محدد',
+        phone: apiOrder.customerInfo?.phone || 'غير محدد'
+      },
+      items: this.mapOrderItems(apiOrder.items || []),
+      notes: apiOrder.notes || 'لا توجد ملاحظات',
+      statusHistory: this.createStatusHistory(apiOrder),
+      // Keep original API data for reference
+      originalData: apiOrder
+    };
+  }
+
+  /**
+   * Calculate subtotal from order items
+   */
+  calculateSubtotal(items: any[]): number {
+    return items.reduce((total, item) => {
+      const itemTotal = (item.price || 0) * (item.quantity || 1);
+      return total + itemTotal;
+    }, 0);
+  }
+
+  /**
+   * Map order items from API format
+   */
+  mapOrderItems(apiItems: any[]): any[] {
+    return apiItems.map((item, index) => ({
+      id: item.product?._id || `item-${index}`,
+      name: item.product?.name || 'منتج غير محدد',
+      nameAr: item.product?.name || 'منتج غير محدد',
+      price: item.price || 0,
+      quantity: item.quantity || 1,
+      total: (item.price || 0) * (item.quantity || 1),
+      image: '/assets/images/default-product.svg'
+    }));
+  }
+
+  /**
+   * Create status history from order data
+   */
+  createStatusHistory(apiOrder: any): any[] {
+    const history = [
+      {
+        status: apiOrder.status || 'pending',
+        date: new Date(apiOrder.createdAt || Date.now()),
+        note: 'تم إنشاء الطلب'
+      }
+    ];
+
+    if (apiOrder.updatedAt && apiOrder.updatedAt !== apiOrder.createdAt) {
+      history.push({
+        status: apiOrder.status || 'pending',
+        date: new Date(apiOrder.updatedAt),
+        note: 'تم تحديث الطلب'
+      });
+    }
+
+    return history;
+  }
+
+  /**
+   * Determine payment status from order data
+   */
+  getPaymentStatusFromOrder(order: any): string {
+    // You can implement logic here based on your API response structure
+    // For now, defaulting to pending
+    return 'pending';
   }
 
   getStatusColor(status: string): string {
@@ -264,78 +196,90 @@ export class OrderDetailsComponent implements OnInit {
   }
 
   updateOrderStatus(): void {
-    this.newOrderStatus = '';
-    this.statusNotes = '';
+    this.newOrderStatus = this.order.status; // Set current status as default
     this.showStatusModal = true;
   }
 
   updatePaymentStatus(): void {
-    this.newPaymentStatus = '';
-    this.paymentNotes = '';
+    this.newPaymentStatus = this.order.paymentStatus; // Set current payment status as default
     this.showPaymentModal = true;
   }
 
   cancelStatusUpdate(): void {
     this.showStatusModal = false;
     this.newOrderStatus = '';
-    this.statusNotes = '';
   }
 
   cancelPaymentUpdate(): void {
     this.showPaymentModal = false;
     this.newPaymentStatus = '';
-    this.paymentNotes = '';
   }
 
   confirmStatusUpdate(): void {
     if (this.newOrderStatus) {
-      // Update the order status
-      this.order.status = this.newOrderStatus;
+      // Show loading state
+      this.isLoading = true;
       
-      // Add to status history
-      this.order.statusHistory.push({
-        status: this.newOrderStatus,
-        date: new Date(),
-        note: this.statusNotes || `تم تحديث الحالة إلى: ${this.getStatusText(this.newOrderStatus)}`
+      // Call API to update order status
+      this.ordersService.updateOrderStatus(this.orderId, this.newOrderStatus).subscribe({
+        next: (success: boolean) => {
+          if (success) {
+            // Update local data
+            this.order.status = this.newOrderStatus;
+            
+            // Add to status history
+            this.order.statusHistory.push({
+              status: this.newOrderStatus,
+              date: new Date(),
+              note: `تم تحديث الحالة إلى: ${this.getStatusText(this.newOrderStatus)}`
+            });
+            
+            // Show success message
+            alert(`تم تحديث حالة الطلب #${this.orderId} إلى: ${this.getStatusText(this.newOrderStatus)}`);
+          } else {
+            alert('فشل في تحديث حالة الطلب. يرجى المحاولة مرة أخرى.');
+          }
+        },
+        error: (error: any) => {
+          console.error('Error updating order status:', error);
+          alert('حدث خطأ أثناء تحديث حالة الطلب. يرجى المحاولة مرة أخرى.');
+        },
+        complete: () => {
+          this.isLoading = false;
+          this.cancelStatusUpdate();
+        }
       });
-      
-      // Update the order in mock data
-      const orderIndex = this.mockOrders.findIndex(o => o.id === this.orderId);
-      if (orderIndex !== -1) {
-        this.mockOrders[orderIndex] = { ...this.order };
-      }
-      
-      console.log('Order status updated:', {
-        orderId: this.orderId,
-        newStatus: this.newOrderStatus,
-        notes: this.statusNotes
-      });
-      
-      alert(`تم تحديث حالة الطلب #${this.orderId} إلى: ${this.getStatusText(this.newOrderStatus)}`);
     }
-    this.cancelStatusUpdate();
   }
 
   confirmPaymentUpdate(): void {
     if (this.newPaymentStatus) {
-      // Update the payment status
-      this.order.paymentStatus = this.newPaymentStatus;
+      // Show loading state
+      this.isLoading = true;
       
-      // Update the order in mock data
-      const orderIndex = this.mockOrders.findIndex(o => o.id === this.orderId);
-      if (orderIndex !== -1) {
-        this.mockOrders[orderIndex] = { ...this.order };
-      }
-      
-      console.log('Payment status updated:', {
-        orderId: this.orderId,
-        newStatus: this.newPaymentStatus,
-        notes: this.paymentNotes
+      // Call API to update payment status
+      this.ordersService.updatePaymentStatus(this.orderId, this.newPaymentStatus).subscribe({
+        next: (success: boolean) => {
+          if (success) {
+            // Update local data
+            this.order.paymentStatus = this.newPaymentStatus;
+            
+            // Show success message
+            alert(`تم تحديث حالة الدفع #${this.orderId} إلى: ${this.getPaymentStatusText(this.newPaymentStatus)}`);
+          } else {
+            alert('فشل في تحديث حالة الدفع. يرجى المحاولة مرة أخرى.');
+          }
+        },
+        error: (error: any) => {
+          console.error('Error updating payment status:', error);
+          alert('حدث خطأ أثناء تحديث حالة الدفع. يرجى المحاولة مرة أخرى.');
+        },
+        complete: () => {
+          this.isLoading = false;
+          this.cancelPaymentUpdate();
+        }
       });
-      
-      alert(`تم تحديث حالة الدفع #${this.orderId} إلى: ${this.getPaymentStatusText(this.newPaymentStatus)}`);
     }
-    this.cancelPaymentUpdate();
   }
 
   showPrintPreview(): void {
