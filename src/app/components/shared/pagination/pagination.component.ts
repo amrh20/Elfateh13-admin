@@ -52,11 +52,6 @@ export class PaginationComponent {
 
   get hasPagination(): boolean {
     const hasPagination = this.pagination !== null && this.totalPages > 1;
-    console.log('🔍 PaginationComponent.hasPagination:', {
-      pagination: this.pagination,
-      totalPages: this.totalPages,
-      result: hasPagination
-    });
     return hasPagination;
   }
 

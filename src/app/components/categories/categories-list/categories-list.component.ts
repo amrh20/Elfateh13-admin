@@ -79,20 +79,10 @@ export class CategoriesListComponent implements OnInit {
         this.filteredCategories = [...this.categories];
         this.totalItems = this.categories.length;
         
-        console.log('🔍 Main categories loaded:', {
-          total: this.categories.length,
-          categories: this.categories.map((c: any) => ({ 
-            id: c.id, 
-            name: c.nameAr || c.name,
-            hasSubcategories: c.subCategories && c.subCategories.length > 0
-          }))
-        });
-        
         this.updatePagination();
         this.isLoading = false;
       },
       error: (error) => {
-        console.error('Error loading categories:', error);
         this.error = 'حدث خطأ في تحميل الأصناف';
         this.isLoading = false;
       }
@@ -119,11 +109,6 @@ export class CategoriesListComponent implements OnInit {
     this.totalItems = this.filteredCategories.length;
     this.updatePagination();
     
-    console.log('🔍 Search results:', {
-      searchTerm: this.searchTerm,
-      totalResults: this.filteredCategories.length,
-      results: this.filteredCategories.map((c: any) => c.nameAr || c.name)
-    });
   }
 
   // Clear search
@@ -145,13 +130,6 @@ export class CategoriesListComponent implements OnInit {
       limit: this.pageSize
     };
     
-    console.log('🔍 Pagination updated:', {
-      currentPage: this.currentPage,
-      totalPages: this.pagination.pages,
-      totalItems: this.totalItems,
-      paginatedCategories: this.paginatedCategories.length,
-      pagination: this.pagination
-    });
   }
 
   onPageChange(page: number): void {
@@ -185,14 +163,12 @@ export class CategoriesListComponent implements OnInit {
       next: (subcategories: any) => {
         if (category) {
           category.subCategories = subcategories || [];
-          console.log(`✅ Loaded ${subcategories.length} subcategories for category:`, categoryId);
           
           // Update pagination if needed
           this.updatePagination();
         }
       },
       error: (error) => {
-        console.error('Error loading subcategories:', error);
         if (category) {
           category.subCategories = [];
         }
@@ -206,7 +182,6 @@ export class CategoriesListComponent implements OnInit {
 
   // Category actions
   addNewCategory(): void {
-    console.log('🔍 Adding new main category');
     this.router.navigate(['/categories/add']);
   }
 
@@ -234,7 +209,6 @@ export class CategoriesListComponent implements OnInit {
 
   // Subcategory actions
   addSubcategory(parentCategoryId: string): void {
-    console.log('🔍 Adding subcategory with parentId:', parentCategoryId);
     this.router.navigate(['/categories/add'], { 
       queryParams: { 
         parentId: parentCategoryId,
@@ -281,12 +255,10 @@ export class CategoriesListComponent implements OnInit {
     
     this.categoriesService.deleteCategory(id).subscribe({
       next: () => {
-        console.log(`تم حذف ${type === 'category' ? 'الصنف' : 'الصنف الفرعي'} بنجاح`);
         this.loadCategories();
         this.closeConfirmDialog();
       },
       error: (error) => {
-        console.error(`Error deleting ${type}:`, error);
         alert(`حدث خطأ في حذف ${type === 'category' ? 'الصنف' : 'الصنف الفرعي'}`);
         this.closeConfirmDialog();
       }
