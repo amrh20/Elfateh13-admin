@@ -19,6 +19,9 @@ export class ProductDetailsComponent implements OnInit {
   error: string = '';
   showDeleteConfirm = false;
   mainImageIndex = 0;
+  showImagePopup = false;
+  popupImageSrc = '';
+  currentImageIndex = 0;
   private imageErrorHandled = new Set<string>(); // Track which images have already had errors handled
 
   constructor(
@@ -236,5 +239,65 @@ export class ProductDetailsComponent implements OnInit {
   // طريقة لتنسيق الأرقام بالفاصلة العربية
   formatNumber(num: number): string {
     return num.toLocaleString('ar-EG');
+  }
+
+  // Image Popup Functions
+  openImagePopup(imageSrc: string): void {
+    this.popupImageSrc = imageSrc;
+    this.showImagePopup = true;
+    
+    // Find the index of the current image
+    if (this.product?.images) {
+      this.currentImageIndex = this.product.images.findIndex((img: string) => img === imageSrc);
+      if (this.currentImageIndex === -1) {
+        this.currentImageIndex = 0;
+      }
+    }
+    
+    // Prevent body scroll when popup is open
+    document.body.style.overflow = 'hidden';
+  }
+
+  closeImagePopup(): void {
+    this.showImagePopup = false;
+    this.popupImageSrc = '';
+    
+    // Restore body scroll
+    document.body.style.overflow = 'auto';
+  }
+
+  previousImage(): void {
+    if (this.product?.images && this.product.images.length > 1) {
+      this.currentImageIndex = this.currentImageIndex > 0 
+        ? this.currentImageIndex - 1 
+        : this.product.images.length - 1;
+      this.popupImageSrc = this.product.images[this.currentImageIndex];
+    }
+  }
+
+  nextImage(): void {
+    if (this.product?.images && this.product.images.length > 1) {
+      this.currentImageIndex = this.currentImageIndex < this.product.images.length - 1 
+        ? this.currentImageIndex + 1 
+        : 0;
+      this.popupImageSrc = this.product.images[this.currentImageIndex];
+    }
+  }
+
+  // Handle keyboard navigation for popup
+  onKeyDown(event: KeyboardEvent): void {
+    if (!this.showImagePopup) return;
+    
+    switch (event.key) {
+      case 'Escape':
+        this.closeImagePopup();
+        break;
+      case 'ArrowLeft':
+        this.nextImage();
+        break;
+      case 'ArrowRight':
+        this.previousImage();
+        break;
+    }
   }
 }

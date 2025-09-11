@@ -1,9 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
-import { ProductsService } from '../../../services/products.service';
-import { CategoriesService } from '../../../services/categories.service';
-import { OrdersService } from '../../../services/orders.service';
+import { DashboardService } from '../../../services/dashboard.service';
 import { AuthService } from '../../../services/auth.service';
 
 @Component({
@@ -23,9 +21,12 @@ export class DashboardComponent implements OnInit {
     totalOrders: 0,
     totalRevenue: 0,
     totalCategories: 0,
+    totalCoupons: 0,
+    totalUsers: 0,
     activeProducts: 0,
     lowStockProducts: 0,
     pendingOrders: 0,
+    deliveredOrders: 0,
     monthlyGrowth: 0
   };
 
@@ -82,9 +83,7 @@ export class DashboardComponent implements OnInit {
   ];
 
   constructor(
-    private productsService: ProductsService,
-    private categoriesService: CategoriesService,
-    private ordersService: OrdersService,
+    private dashboardService: DashboardService,
     private authService: AuthService,
     private router: Router
   ) {}
@@ -101,122 +100,53 @@ export class DashboardComponent implements OnInit {
 
   loadDashboardData(): void {
     this.isLoading = true;
-
-    // تحميل المنتجات
-    this.productsService.getProducts().subscribe((response: any) => {
-      const products = response.data || response || [];
-      this.stats.totalProducts = products.length;
-      this.stats.activeProducts = products.filter((p: any) => p.isActive).length;
-      this.stats.lowStockProducts = products.filter((p: any) => p.stock < 10).length;
-      
-      this.recentProducts = products.slice(0, 5);
-      this.lowStockProducts = products.filter((p: any) => p.stock < 10).slice(0, 5);
-      
-      // تحميل الطلبات لتحليل المبيعات
-      this.ordersService.getOrders().subscribe((orders: any) => {
-        this.generateProductAnalytics(products, orders);
-        this.generateOrderAnalytics(orders);
-      });
-    });
-
-    // تحميل المنتجات المميزة
-    this.productsService.getFeaturedProducts().subscribe((products: any) => {
-      this.featuredProducts = (products.data || products || []).slice(0, 4);
-    });
-
-    // تحميل الأصناف
-    this.categoriesService.getCategories().subscribe((categories: any) => {
-      const cats = categories.data || categories || [];
-      this.stats.totalCategories = cats.length;
-      this.categories = cats.slice(0, 5);
-      this.topCategories = this.getTopCategories(cats);
-    });
-
-    // إحصائيات وهمية للعرض
-    this.stats.totalOrders = 156;
-    this.stats.totalRevenue = 45600;
-    this.stats.pendingOrders = 23;
-    this.stats.monthlyGrowth = 12.5;
-
-    setTimeout(() => {
-      this.isLoading = false;
-    }, 1000);
-  }
-
-  generateProductAnalytics(products: any[], orders: any[]): void {
-    const productSales = new Map<string, { sales: number; lastSold: Date; revenue: number }>();
-
-    // تحليل المبيعات
-    orders.forEach((order: any) => {
-      order.items?.forEach((item: any) => {
-        const product = products.find((p: any) => p._id === item.productId || p.id === item.productId);
-        if (product) {
-          const existing = productSales.get(product._id || product.id) || { sales: 0, lastSold: new Date(0), revenue: 0 };
-          existing.sales += item.quantity || 0;
-          existing.revenue += (item.price || 0) * (item.quantity || 0);
-          if (new Date(order.createdAt) > existing.lastSold) {
-            existing.lastSold = new Date(order.createdAt);
-          }
-          productSales.set(product._id || product.id, existing);
-        }
-      });
-    });
-
-    // المنتجات الأكثر مبيعاً
-    this.topSellingProducts = products
-      .map((product: any) => ({
-        ...product,
-        sales: productSales.get(product._id || product.id)?.sales || 0,
-        revenue: productSales.get(product._id || product.id)?.revenue || 0
-      }))
-      .filter((p: any) => p.sales > 0)
-      .sort((a: any, b: any) => b.sales - a.sales)
-      .slice(0, 5);
-
-    // المنتجات بطيئة الحركة
-    this.slowMovingProducts = products
-      .map((product: any) => ({
-        ...product,
-        sales: productSales.get(product._id || product.id)?.sales || 0,
-        lastSold: productSales.get(product._id || product.id)?.lastSold || new Date(0)
-      }))
-      .filter((p: any) => {
-        const daysSinceLastSale = p.lastSold.getTime() > 0 
-          ? Math.floor((Date.now() - p.lastSold.getTime()) / (1000 * 60 * 60 * 24))
-          : 999;
-        return daysSinceLastSale > 30;
-      })
-      .sort((a: any, b: any) => b.lastSold.getTime() - a.lastSold.getTime())
-      .slice(0, 5);
-
-    // المنتجات المناسبة للعروض
-    this.productsForPromotion = products
-      .map((product: any) => ({
-        ...product,
-        sales: productSales.get(product._id || product.id)?.sales || 0
-      }))
-      .filter((p: any) => p.stock > 10 && p.sales < 5)
-      .sort((a: any, b: any) => b.stock - a.stock)
-      .slice(0, 5);
-  }
-
-  generateOrderAnalytics(orders: any[]): void {
-    this.recentOrders = orders.slice(0, 5);
     
-    // إحصائيات حالة الطلبات
-    this.orderStatusCounts = orders.reduce((acc: any, order: any) => {
-      const status = order.status || 'pending';
-      acc[status] = (acc[status] || 0) + 1;
-      return acc;
-    }, {});
+    console.log('🔄 بدء تحميل بيانات Dashboard...');
+
+    this.dashboardService.getDashboardStats().subscribe({
+      next: (dashboardData) => {
+        console.log('✅ تم تحميل بيانات Dashboard:', dashboardData);
+        
+        // تحديث الإحصائيات
+        this.stats = {
+          ...this.stats,
+          ...dashboardData.stats
+        };
+
+        // تحديث البيانات الأخرى
+        this.recentProducts = dashboardData.products.slice(0, 5);
+        this.categories = dashboardData.categories.slice(0, 5);
+        this.recentOrders = dashboardData.orders.slice(0, 5);
+        this.featuredProducts = dashboardData.products.filter((p: any) => p.featured === true).slice(0, 4);
+        this.lowStockProducts = dashboardData.products.filter((p: any) => (p.stock || 0) < 10).slice(0, 5);
+
+        console.log('📊 الإحصائيات النهائية:', this.stats);
+        
+        this.isLoading = false;
+      },
+      error: (error) => {
+        console.error('❌ خطأ في تحميل بيانات Dashboard:', error);
+        
+        // استخدام البيانات التجريبية في حالة الخطأ
+        this.stats = {
+          totalProducts: 20,
+          totalCategories: 4,
+          totalOrders: 156,
+          totalRevenue: 45600,
+          totalCoupons: 8,
+          totalUsers: 12,
+          activeProducts: 18,
+          lowStockProducts: 3,
+          pendingOrders: 23,
+          deliveredOrders: 98,
+          monthlyGrowth: 12.5
+        };
+        
+        this.isLoading = false;
+      }
+    });
   }
 
-  getTopCategories(categories: any[]): any[] {
-    return categories
-      .filter((cat: any) => cat.productCount > 0)
-      .sort((a: any, b: any) => (b.productCount || 0) - (a.productCount || 0))
-      .slice(0, 5);
-  }
 
   // إجراءات سريعة
   navigateToAction(route: string): void {

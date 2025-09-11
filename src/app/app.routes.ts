@@ -90,6 +90,18 @@ export const routes: Routes = [
         loadComponent: () => import('./components/users/users-list/users-list.component').then(m => m.UsersListComponent)
       },
       {
+        path: 'coupons',
+        loadComponent: () => import('./components/coupons/coupons-list/coupons-list.component').then(m => m.CouponsListComponent)
+      },
+      {
+        path: 'coupons/add',
+        loadComponent: () => import('./components/coupons/coupon-form/coupon-form.component').then(m => m.CouponFormComponent)
+      },
+      {
+        path: 'coupons/edit/:id',
+        loadComponent: () => import('./components/coupons/coupon-form/coupon-form.component').then(m => m.CouponFormComponent)
+      },
+      {
         path: 'settings',
         loadComponent: () => import('./components/settings/settings.component').then(m => m.SettingsComponent)
       },
