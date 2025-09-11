@@ -109,15 +109,8 @@ body {
   background-color: var(--blue-700) !important;
 }
 
-.gap-3 {
-  gap: 1rem !important;
-}
-.bg-blue-600 {
-  background: #2563eb !important;
-  height: 48px;
-}
-.bg-blue-700 {
-  background: #1d4ed8 !important;
+/* Custom button heights */
+.btn-custom-height {
   height: 48px;
 }
 .badge-discount {
@@ -199,12 +192,12 @@ body {
       font-size: 0.875rem;
   }
 }
-// Fix for badge positioning
-.relative {
+/* Custom positioning utilities for specific cases */
+.force-relative {
   position: relative !important;
 }
 
-.absolute {
+.force-absolute {
   position: absolute !important;
 }
 .bg-indigo-600 {
@@ -396,55 +389,7 @@ body {
       border-color: #047857;
   }
   
-  // Fix for badge positioning
-  .relative {
-      position: relative !important;
-  }
-  
-  .absolute {
-      position: absolute !important;
-  }
+  /* Badge positioning utilities are handled globally */
   
   
-  }
-  .bg-blue-600 {
-    background-color: #2563eb !important;
-  }
-  .bg-blue-700 {
-    background-color: #1d4ed8 !important;
-  }
-  .bg-green-600 {
-    background-color: #059669 !important;
-  }
-  .bg-purple-600 {
-    background-color: #6366f1 !important;
-  }
-  .bg-purple-700 {
-    background-color: #4f46e5 !important;
-  }
-  .bg-red-600 {
-    background-color: #dc2626 !important;
-  }
-  .bg-red-700 {
-    background-color: #b91c1c !important;
-  }
-  .bg-yellow-600 {
-    background-color: #eab308 !important;
-  }
-  .bg-yellow-700 {
-    background-color: #ca8a04 !important;
-  }
-  .bg-gray-600 {
-  }
-  .left-2 {
-    left: 2px !important;
-  }
-  .right-2 {
-    right: 2px !important;
-  }
-  .top-2 {
-    top: 2px !important;
-  }
-  .bottom-2 {
-    bottom: 2px !important;
   }
