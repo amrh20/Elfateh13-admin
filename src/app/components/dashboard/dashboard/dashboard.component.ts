@@ -128,19 +128,19 @@ export class DashboardComponent implements OnInit {
         console.error('❌ خطأ في تحميل بيانات Dashboard:', error);
         
         // استخدام البيانات التجريبية في حالة الخطأ
-        this.stats = {
-          totalProducts: 20,
-          totalCategories: 4,
-          totalOrders: 156,
-          totalRevenue: 45600,
-          totalCoupons: 8,
-          totalUsers: 12,
-          activeProducts: 18,
-          lowStockProducts: 3,
-          pendingOrders: 23,
-          deliveredOrders: 98,
-          monthlyGrowth: 12.5
-        };
+        // this.stats = {
+        //   totalProducts: 20,
+        //   totalCategories: 4,
+        //   totalOrders: 156,
+        //   totalRevenue: 45600,
+        //   totalCoupons: 8,
+        //   totalUsers: 12,
+        //   activeProducts: 18,
+        //   lowStockProducts: 3,
+        //   pendingOrders: 23,
+        //   deliveredOrders: 98,
+        //   monthlyGrowth: 12.5
+        // };
         
         this.isLoading = false;
       }

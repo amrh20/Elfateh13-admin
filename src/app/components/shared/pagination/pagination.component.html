@@ -31,14 +31,15 @@
     </button>
 
     <!-- Page Numbers -->
-    <div class="flex items-center gap-1">
+    <div class="flex items-center gap-1 overflow-x-auto max-w-xs sm:max-w-none">
       <button
         *ngFor="let page of pageNumbers"
         (click)="onPageChange(page)"
         [class]="page === currentPage 
-          ? 'pagination-active pagination-button' 
-          : 'pagination-inactive pagination-button'"
+          ? 'pagination-active pagination-button touch-target' 
+          : 'pagination-inactive pagination-button touch-target'"
         [title]="'الصفحة ' + page"
+        class="flex-shrink-0"
       >
         {{ page }}
       </button>

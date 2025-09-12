@@ -50,6 +50,7 @@
 @media (max-width: 1023px) {
   .dashboard-layout {
     position: relative;
+    overflow-x: hidden; /* Prevent horizontal scroll */
   }
   
   .sidebar-container {
@@ -62,6 +63,7 @@
   
   .main-content {
     width: 100%;
+    min-height: 100vh; /* Ensure full height */
   }
 }
 

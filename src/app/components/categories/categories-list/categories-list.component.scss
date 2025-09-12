@@ -600,6 +600,18 @@ html {
     margin-right: 0;
     opacity: 1;
   }
+  
+  // Improve touch targets on mobile
+  .subcategory-action-button {
+    min-width: 44px;
+    min-height: 44px;
+  }
+  
+  // Better mobile button layout
+  .add-subcategory-btn {
+    padding: 1rem;
+    font-size: 0.9rem;
+  }
 }
 
 @media (max-width: 640px) {
@@ -618,4 +630,8 @@ html {
   .subcategory-stat-text {
     font-size: 0.75rem; /* 12px */
   }
+}
+
+.d-flex {
+  display: flex;
 }

@@ -102,11 +102,34 @@ body {
 
 /* Ensure blue-600 works */
 .bg-blue-600 {
-  background-color: var(--blue-600) !important;
+  background-color: #2563eb !important;
+  color: white !important;
 }
 
 .hover\:bg-blue-700:hover {
-  background-color: var(--blue-700) !important;
+  background-color: #1d4ed8 !important;
+}
+
+/* Fix for gradient backgrounds */
+.bg-gradient-to-r {
+  &.from-blue-600.to-purple-600 {
+    background: linear-gradient(to right, #2563eb, #7c3aed) !important;
+    color: white !important;
+  }
+  
+  &.hover\:from-blue-700.hover\:to-purple-700:hover {
+    background: linear-gradient(to right, #1d4ed8, #6d28d9) !important;
+  }
+}
+
+/* Fix for gap spacing */
+.gap-2 > :not([hidden]) ~ :not([hidden]) {
+  gap: 0.5rem !important;
+}
+
+/* RTL spacing fixes */
+[dir="rtl"] .gap-2 > :not([hidden]) ~ :not([hidden]) {
+  gap: 0.5rem !important;
 }
 
 /* Custom button heights */
@@ -199,6 +222,77 @@ body {
 
 .force-absolute {
   position: absolute !important;
+}
+
+/* Touch targets for better mobile usability */
+.touch-target {
+  min-height: 44px;
+  min-width: 44px;
+  
+  @media (max-width: 768px) {
+    min-height: 48px;
+    min-width: 48px;
+  }
+}
+
+/* Better responsive tables */
+@media (max-width: 768px) {
+  .table-responsive-stack {
+    display: block !important;
+    
+    thead {
+      display: none;
+    }
+    
+    tbody, tr, td {
+      display: block;
+      width: 100%;
+    }
+    
+    tr {
+      border: 1px solid #e5e7eb;
+      border-radius: 0.5rem;
+      margin-bottom: 1rem;
+      padding: 1rem;
+      background: white;
+    }
+    
+    td {
+      border: none !important;
+      padding: 0.5rem 0 !important;
+      position: relative;
+      
+      &:before {
+        content: attr(data-label);
+        position: absolute;
+        left: 6px;
+        width: 45%;
+        text-align: left;
+        font-weight: 600;
+        color: #374151;
+      }
+      
+      &:nth-child(n+2) {
+        border-top: 1px solid #f3f4f6;
+        padding-top: 0.75rem !important;
+      }
+    }
+  }
+}
+
+/* Improved responsive modals */
+@media (max-width: 768px) {
+  .modal-container {
+    padding: 1rem !important;
+    
+    .modal-content {
+      margin: 0 !important;
+      width: 100% !important;
+      max-width: 100% !important;
+      max-height: calc(100vh - 2rem) !important;
+      border-radius: 0.75rem !important;
+    }
+  }
 }
 .bg-indigo-600 {
   background-color: #6366f1;
@@ -392,4 +486,17 @@ body {
   /* Badge positioning utilities are handled globally */
   
   
+  }
+
+  .d-flex {
+    display: flex;
+  }
+  .justify-content-center {
+    justify-content: center;
+  }
+  .w-100 {
+    width: 100%;
+  }
+  .text-center {
+    text-align: center;
   }

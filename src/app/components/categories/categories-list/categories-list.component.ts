@@ -37,13 +37,16 @@ export class CategoriesListComponent implements OnInit {
   
   // Pagination
   currentPage = 1;
-  pageSize = 4; // Reduced from 6 to 4 to ensure pagination shows
+  pageSize = 10; // Show 10 items per page
   totalItems = 0;
   pagination: any = {};
   
   // Search
   searchTerm = '';
   filteredCategories: any[] = [];
+  
+  // View options
+  showOnlyMainCategories = false; // Set to true to show only main categories
   
   // Collapse state
   expandedCategories: Set<string> = new Set();
@@ -70,24 +73,37 @@ export class CategoriesListComponent implements OnInit {
       next: (response: any) => {
         const allCategories = response?.data || response || [];
         
-        // Filter to show only main categories (no parent)
-        this.categories = allCategories.filter((category: any) => {
-          // Show only categories that don't have a parent (main categories)
-          return !category.parentId && !category.parent;
-        });
+        console.log('Categories received from API:', allCategories.length);
+        
+        // Filter categories based on view option
+        if (this.showOnlyMainCategories) {
+          // Show only main categories (no parent)
+          this.categories = allCategories.filter((category: any) => {
+            return !category.parentId && !category.parent;
+          });
+          console.log('Showing only main categories:', this.categories.length);
+        } else {
+          // Show all categories (main and sub)
+          this.categories = allCategories;
+          console.log('Showing all categories:', this.categories.length);
+        }
         
         this.filteredCategories = [...this.categories];
         this.totalItems = this.categories.length;
         
         this.updatePagination();
+        console.log('Displaying', this.paginatedCategories.length, 'categories out of', this.totalItems);
+        
         this.isLoading = false;
       },
       error: (error) => {
+        console.error('API Error:', error);
         this.error = 'حدث خطأ في تحميل الأصناف';
         this.isLoading = false;
       }
     });
   }
+
 
   // Search functionality
   onSearchInput(): void {
