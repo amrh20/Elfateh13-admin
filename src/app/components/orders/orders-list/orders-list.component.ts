@@ -84,7 +84,9 @@ export class OrdersListComponent implements OnInit {
         }
         
         if (ordersData.length > 0) {
+          console.log('Raw API Order Data:', ordersData[0]); // Debug first order
           this.filteredOrders = ordersData.map((order: any) => this.mapAPIOrderToDisplay(order));
+          console.log('Mapped Order Data:', this.filteredOrders[0]); // Debug mapped order
         } else {
           this.filteredOrders = [];
         }
@@ -106,15 +108,16 @@ export class OrdersListComponent implements OnInit {
     return {
       id: apiOrder._id || apiOrder.id,
       orderNumber: apiOrder.orderNumber || apiOrder._id || apiOrder.id,
-      userName: apiOrder.userName || apiOrder.user?.name || apiOrder.customerName || 'غير محدد',
-      userEmail: apiOrder.userEmail || apiOrder.user?.email || apiOrder.customerEmail || 'غير محدد',
+      userName: apiOrder.customerInfo?.name || apiOrder.userName || apiOrder.user?.name || apiOrder.customerName || 'غير محدد',
+      userEmail: apiOrder.customerInfo?.email || apiOrder.userEmail || apiOrder.user?.email || apiOrder.customerEmail || 'غير محدد',
       totalAmount: apiOrder.totalAmount || apiOrder.amount || 0,
       status: apiOrder.status || 'pending',
       paymentStatus: apiOrder.paymentStatus || 'pending',
       createdAt: apiOrder.createdAt || new Date(),
       notes: apiOrder.notes || '',
       items: apiOrder.items || [],
-      customerPhone: apiOrder.customerPhone || apiOrder.user?.phone || '',
+      customerPhone: apiOrder.customerInfo?.phone || apiOrder.customerPhone || apiOrder.user?.phone || '',
+      customerInfo: apiOrder.customerInfo || null, // Add customerInfo object
       key: apiOrder.key || '', // Add key field if available
       originalData: apiOrder // Keep original data for debugging
     };

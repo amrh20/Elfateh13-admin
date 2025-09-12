@@ -216,12 +216,24 @@ export class CouponsListComponent implements OnInit {
     return isActive === true ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800';
   }
 
-  getDiscountTypeText(type?: string): string {
+  getDiscountTypeText(type?: string, discount?: number): string {
+    // If type is not provided, guess based on discount value
+    if (!type && discount !== undefined) {
+      return discount <= 100 ? 'نسبة مئوية' : 'مبلغ ثابت';
+    }
     return type === 'percentage' ? 'نسبة مئوية' : 'مبلغ ثابت';
   }
 
   formatDiscount(coupon: Coupon): string {
-    if (coupon.discountType === 'percentage') {
+    console.log('Formatting discount:', { 
+      discount: coupon.discount, 
+      discountType: coupon.discountType,
+      code: coupon.code 
+    });
+    
+    // Check if discountType exists, if not, assume percentage for values <= 100
+    if (coupon.discountType === 'percentage' || 
+        (!coupon.discountType && coupon.discount <= 100)) {
       return `${coupon.discount}%`;
     } else {
       return `${coupon.discount} جنيه`;
