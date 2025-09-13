@@ -111,6 +111,8 @@ export class OrdersListComponent implements OnInit {
       userName: apiOrder.customerInfo?.name || apiOrder.userName || apiOrder.user?.name || apiOrder.customerName || 'غير محدد',
       userEmail: apiOrder.customerInfo?.email || apiOrder.userEmail || apiOrder.user?.email || apiOrder.customerEmail || 'غير محدد',
       totalAmount: apiOrder.totalAmount || apiOrder.amount || 0,
+      subtotal: apiOrder.subtotal || 0,
+      deliveryFee: apiOrder.deliveryFee || 0,
       status: apiOrder.status || 'pending',
       paymentStatus: apiOrder.paymentStatus || 'pending',
       createdAt: apiOrder.createdAt || new Date(),

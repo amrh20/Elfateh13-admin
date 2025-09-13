@@ -65,15 +65,21 @@ export class OrderDetailsComponent implements OnInit {
    * Map API order data to display format
    */
   mapAPIOrderToDisplay(apiOrder: any): any {
-    return {
+    console.log('🔍 Order Details - API Order Data:', apiOrder);
+    console.log('📦 Delivery Fee from API:', apiOrder.deliveryFee);
+    console.log('💰 Subtotal from API:', apiOrder.subtotal);
+    console.log('💳 Total Amount from API:', apiOrder.totalAmount);
+    
+    const mappedOrder = {
       id: apiOrder._id || apiOrder.orderNumber || 'غير محدد',
       orderNumber: apiOrder.orderNumber || 'غير محدد',
       userName: apiOrder.customerInfo?.name || 'غير محدد',
       userEmail: apiOrder.customerInfo?.email || 'غير محدد',
       userPhone: apiOrder.customerInfo?.phone || 'غير محدد',
       totalAmount: apiOrder.totalAmount || 0,
-      subtotal: this.calculateSubtotal(apiOrder.items),
-      shipping: 0, // API doesn't provide shipping cost
+      subtotal: apiOrder.subtotal || this.calculateSubtotal(apiOrder.items),
+      deliveryFee: apiOrder.deliveryFee || 0,
+      shipping: apiOrder.deliveryFee || 0,
       status: apiOrder.status || 'pending',
       paymentStatus: this.getPaymentStatusFromOrder(apiOrder),
       paymentMethod: 'بطاقة ائتمان', // Default value
@@ -92,6 +98,11 @@ export class OrderDetailsComponent implements OnInit {
       // Keep original API data for reference
       originalData: apiOrder
     };
+    
+    console.log('✅ Order Details - Mapped Order:', mappedOrder);
+    console.log('🚚 Mapped Delivery Fee:', mappedOrder.deliveryFee);
+    
+    return mappedOrder;
   }
 
   /**

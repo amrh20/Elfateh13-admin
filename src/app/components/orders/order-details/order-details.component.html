@@ -109,8 +109,8 @@
                 <p class="text-sm text-gray-500">الكمية: {{ item.quantity }}</p>
               </div>
               <div class="text-left">
-                <p class="text-sm font-medium text-gray-900">{{ item.price | currency:'EGP':'symbol' }}</p>
-                <p class="text-sm text-gray-600">المجموع: {{ item.total | currency:'EGP':'symbol' }}</p>
+                <p class="text-sm font-medium text-gray-900">{{ item.price | currency:'ج':'symbol' }}</p>
+                <p class="text-sm text-gray-600">المجموع: {{ item.total | currency:'ج':'symbol' }}</p>
               </div>
             </div>
           </div>
@@ -170,16 +170,16 @@
           <div class="space-y-3">
             <div class="flex justify-between">
               <span class="text-sm text-gray-600">المجموع الفرعي</span>
-              <span class="text-sm text-gray-900">{{ order.subtotal | currency:'EGP':'symbol' }}</span>
+              <span class="text-sm text-gray-900">{{ order.subtotal | currency:'ج':'symbol' }}</span>
             </div>
             <div class="flex justify-between">
               <span class="text-sm text-gray-600">الشحن</span>
-              <span class="text-sm text-gray-900">{{ order.shipping | currency:'EGP':'symbol' }}</span>
+              <span class="text-sm text-gray-900">{{ order.deliveryFee | currency:'ج':'symbol' }}</span>
             </div>
             <div class="border-t pt-3">
               <div class="flex justify-between">
                 <span class="text-base font-medium text-gray-900">الإجمالي</span>
-                <span class="text-base font-bold text-gray-900">{{ order.totalAmount | currency:'EGP':'symbol' }}</span>
+                <span class="text-base font-bold text-gray-900">{{ order.totalAmount | currency:'ج':'symbol' }}</span>
               </div>
             </div>
           </div>
@@ -355,7 +355,7 @@
                   <p class="text-sm font-medium text-gray-900">{{ item.nameAr }}</p>
                   <p class="text-xs text-gray-600">الكمية: {{ item.quantity }}</p>
                 </div>
-                <p class="text-sm font-medium text-gray-900">{{ item.total | currency:'EGP':'symbol' }}</p>
+                <p class="text-sm font-medium text-gray-900">{{ item.total | currency:'ج':'symbol' }}</p>
               </div>
             </div>
           </div>
@@ -363,15 +363,15 @@
           <div class="border-t pt-4">
             <div class="flex justify-between mb-2">
               <span class="text-sm text-gray-600">المجموع الفرعي:</span>
-              <span class="text-sm text-gray-900">{{ order?.subtotal | currency:'EGP':'symbol' }}</span>
+              <span class="text-sm text-gray-900">{{ order?.subtotal | currency:'ج':'symbol' }}</span>
             </div>
             <div class="flex justify-between mb-2">
               <span class="text-sm text-gray-600">الشحن:</span>
-              <span class="text-sm text-gray-900">{{ order?.shipping | currency:'EGP':'symbol' }}</span>
+              <span class="text-sm text-gray-900">{{ order?.shipping | currency:'ج':'symbol' }}</span>
             </div>
             <div class="flex justify-between text-lg font-bold">
               <span class="text-gray-900">الإجمالي:</span>
-              <span class="text-gray-900">{{ order?.totalAmount | currency:'EGP':'symbol' }}</span>
+              <span class="text-gray-900">{{ order?.totalAmount | currency:'ج':'symbol' }}</span>
             </div>
           </div>
         </div>
