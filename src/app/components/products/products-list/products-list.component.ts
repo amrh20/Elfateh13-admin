@@ -30,6 +30,7 @@ export class ProductsListComponent implements OnInit {
   
   // Filters object
   filters = {
+    search: '',
     subcategory: '',
     productType: ''
   };
@@ -314,23 +315,6 @@ export class ProductsListComponent implements OnInit {
     return pages;
   }
 
-  // Filter methods
-  applyFilters(): void {
-    this.currentPage = 1; // Reset to first page when applying filters
-    if (this.currentSubcategory) {
-      this.loadProducts();
-    } else {
-      this.loadAllProducts();
-    }
-  }
-
-  clearFilters(): void {
-    this.filters = {
-      subcategory: '',
-      productType: ''
-    };
-    this.applyFilters();
-  }
 
   sendFiltersToAPI(): void {
     console.log('🚀 Sending filters to API:', this.filters);
@@ -368,9 +352,70 @@ export class ProductsListComponent implements OnInit {
     };
 
     // Add filters only if they have values
+    if (this.filters.search && this.filters.search.trim()) {
+      params.search = this.filters.search.trim();
+      console.log('📡 Adding search parameter:', params.search);
+    }
     if (this.filters.subcategory) params.subcategory = this.filters.subcategory;
     if (this.filters.productType) params.productType = this.filters.productType;
 
+    console.log('📡 Final API parameters:', params);
     return params;
+  }
+
+  /**
+   * Handle search input changes
+   */
+  onSearchChange(): void {
+    console.log('🔍 Search changed:', this.filters.search);
+    // Reset to first page when searching
+    this.currentPage = 1;
+    // Apply search with small delay for better UX
+    setTimeout(() => {
+      console.log('🔍 Applying search after delay:', this.filters.search);
+      this.applyFilters();
+    }, 300);
+  }
+
+  /**
+   * Handle filter changes (dropdown changes)
+   */
+  onFilterChange(): void {
+    // Reset to first page when filters change
+    this.currentPage = 1;
+    // Apply filters immediately
+    this.applyFilters();
+  }
+
+  /**
+   * Apply all current filters and search
+   */
+  applyFilters(): void {
+    console.log('🔍 Applying filters:', this.filters);
+    // Reset to first page
+    this.currentPage = 1;
+    // Reload products with current filters
+    if (this.currentSubcategory) {
+      this.loadProducts();
+    } else {
+      this.loadAllProducts();
+    }
+  }
+
+  /**
+   * Clear all filters and search
+   */
+  clearFilters(): void {
+    this.filters = {
+      search: '',
+      subcategory: '',
+      productType: ''
+    };
+    this.currentPage = 1;
+    if (this.currentSubcategory) {
+      this.loadProducts();
+    } else {
+      this.loadAllProducts();
+    }
   }
 }

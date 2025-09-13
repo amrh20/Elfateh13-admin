@@ -64,12 +64,24 @@
       <!-- Filters Section -->
       <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-4 sm:p-6 mb-6">
         
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <!-- Search Input -->
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">البحث</label>
+            <input
+              type="text"
+              [(ngModel)]="filters.search"
+              (input)="onSearchChange()"
+              placeholder="البحث في المنتجات..."
+              class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            >
+          </div>
           <!-- Subcategory Filter -->
           <div>
             <label class="block text-sm font-medium text-gray-700 mb-2">التصنيف الفرعي</label>
             <select
               [(ngModel)]="filters.subcategory"
+              (change)="onFilterChange()"
               class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             >
               <option value="">اختر التصنيف الفرعي</option>
@@ -85,13 +97,12 @@
   
   
   
-  
-  
           <!-- Product Type Filter -->
           <div>
             <label class="block text-sm font-medium text-gray-700 mb-2">نوع المنتج</label>
             <select 
               [(ngModel)]="filters.productType"
+              (change)="onFilterChange()"
               class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             >
               <option value="">--</option>
@@ -111,12 +122,12 @@
             (click)="clearFilters()"
             class="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 transition-colors text-center"
           >
-            مسح البحث 
+            مسح الفلاتر 
           </button>
           
           <div class="search-button-container">
             <button
-              (click)="sendFiltersToAPI()"
+              (click)="applyFilters()"
               class="bg-green-600 text-white px-6 py-2 rounded-md hover:bg-green-700 transition-colors flex items-center justify-center space-x-2 space-x-reverse"
             >
               <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">

@@ -146,10 +146,15 @@ export class ProductsService {
     
     // Add filters to params
     if (filters) {
+      if (filters.search && filters.search.trim()) {
+        params.search = filters.search.trim();
+        console.log('🔍 Adding search to API call:', params.search);
+      }
       if (filters.subcategory) params.subcategory = filters.subcategory;
       if (filters.productType) params.productType = filters.productType;
     }
     
+    console.log('📡 API call params:', params);
     return this.apiService.get<any>('/products/admin', params);
   }
 
@@ -206,10 +211,15 @@ export class ProductsService {
     const params: any = { page, limit };
     
     if (filters) {
+      if (filters.search && filters.search.trim()) {
+        params.search = filters.search.trim();
+        console.log('🔍 Adding search to subcategory API call:', params.search);
+      }
       if (filters.subcategory) params.subcategory = filters.subcategory;
       if (filters.productType) params.productType = filters.productType;
     }
     
+    console.log('📡 Subcategory API call params:', params);
     return this.apiService.get<any>(`/products/subcategory/${subcategoryId}`, params);
   }
 }
